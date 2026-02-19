@@ -457,7 +457,7 @@ function bonzi(colorurl,left,top,property){
     $("#chat_message").click(hidectx);
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
-			<p class='context_text' id='${localId}_asshole'>Call an asshole</p>
+			<p class="context_text" id="${localId}_asshole" onclick="socket.emit('command',{type:'asshole',param:'${screenbonzis({id:localId}).name}'});">Call an asshole</p>
 		</div>`);
     return false;
   }
@@ -471,6 +471,19 @@ function urlify(text) {
   return text.replace(urlRegex, function(url) {
     return '<a href="'+url+'">'+url+'</a>';
   })
+}
+function txtDuration(txt){
+	var wordsPerMinute = 80;
+    var words = txt.split(' ').length;
+    if(words < 2 && txt.length > 20){
+      wordsPerMinute = 10;
+    }
+    if(words < 2 && txt.length > 70){
+      wordsPerMinute = 4;
+    }
+    var approximateDuration = (words / wordsPerMinute) * 60 * 1000; 
+	
+	return approximateDuration;
 }
 function screenbonzis(properties){
   var bonziselect = "";
@@ -556,8 +569,9 @@ function login(){
     thisbonzi.talk({text: newMsg});
   });
   socket.on("asshole", (data) => {
-    let thisbonzi = screenbonzis({id: data.id});
-    thisbonzi.talk({text: "Hey, " + data.targ + "!"});
+    let thisbonzi = screenbonzis({id: data.by});
+	let queue = ["Hey, " + data.to + "!","You're a fucking asshole!"];
+    queue.forEach((queueText,i) => { setTimeout(() => {thisbonzi.talk({text:queueText});},i*txtDuration(queueText)); });
   });
   socket.on("updateUser", (data) => {
     var n = data.name;
