@@ -595,6 +595,19 @@ function screenbonzis(properties){
   }
   return bonziselect;
 }
+ var randompos = (type) => {
+      var maxh = $(window).height() - 180 - 30;
+      var maxw = $(window).width() - 180;
+      
+      var newx1 = Math.floor(Math.random() * maxw);
+      var newy1 = Math.floor(Math.random() * maxh);
+      if(type == "x"){
+        return newx1 + "px";
+      }
+      if(type == "y"){
+        return newy1 + "px";
+      }
+    };
 function resetUsers(userlist){
 	bonzislist = [];
     userAmt = userlist.length;
@@ -698,19 +711,7 @@ socket.on("err",(errorTxt)=>alert(errorTxt));
         <a href="#" onclick="window.location.reload()">Reload?</a><br>
 	`})
   });
-    var randompos = (type) => {
-      var maxh = $(window).height() - 180 - 30;
-      var maxw = $(window).width() - 180;
-      
-      var newx1 = Math.floor(Math.random() * maxw);
-      var newy1 = Math.floor(Math.random() * maxh);
-      if(type == "x"){
-        return newx1 + "px";
-      }
-      if(type == "y"){
-        return newy1 + "px";
-      }
-    }
+   
   
   
 }
