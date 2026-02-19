@@ -500,11 +500,6 @@ p {
     #chat_message_cont {
       left: 70px;
     }
-    #chat_send {
-      width: 70px;
-      font-size: 13px;
-      padding-left: 22px;
-    }
   }
 
   #icon_toggle_btn {
