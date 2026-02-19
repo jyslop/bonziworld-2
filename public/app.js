@@ -655,7 +655,7 @@ function login(){
     }}
   ];
   for(i = 0; i < clickhandlers.length; i++){
-    $(clickhandlers[i].id).click(clickhandlers[i].func);
+    document.getElementById(clickhandlers[i].id.substring(1)).onclick = () => {clickhandlers[i].func()};
   }
 
   socket.on("room", (data) => {
