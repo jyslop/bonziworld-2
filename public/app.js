@@ -437,7 +437,15 @@ function bonzi(colorurl,left,top,property){
 
     
   }
-  
+  this.leave = () => {
+	   document.getElementById(localId).remove();
+   	document.getElementById("name_" + localId).remove();
+    document.getElementById("chat_" + localId).remove();
+    document.getElementById("point_" + localId).remove();
+	  
+	  bonzislist.splice(screenbonzis({id:localId}).queue,1);
+	  bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
+  };
   this.animate = animate;
   this.move = move;
   this.draw = draw;
@@ -669,12 +677,7 @@ function login(){
     bonzislist.push(newuser);
   });
   socket.on("leave", (data) => {
-	bonzislist.splice(screenbonzis({id:data.id}).queue,1);
-	bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
-    document.getElementById(data.id).remove();
-    document.getElementById("name_" + data.id).remove();
-    document.getElementById("chat_" + data.id).remove();
-    document.getElementById("point_" + data.id).remove();
+	screenbonzis({id:data.id}).leave();
   });
   socket.on("msg", (data) => {
 	console.log(data);
