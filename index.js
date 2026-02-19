@@ -61,11 +61,10 @@ let config = {
 			}
 		},
 		"asshole":(thisSocket,eventData)=>{
-			
 			eventData = {to:eventData};
 			console.log(eventData);
 			if(typeof eventData == "object"){
-				if(typeof eventData !== "string")return;
+				console.log({by:thisSocket.user.id,to:blankify(eventData.to)});
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
 		}
