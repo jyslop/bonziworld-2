@@ -617,7 +617,9 @@ function screenbonzis(properties){
       }
     };
 function resetUsers(userlist){
-	bonzislist = [];
+	bonzislist.forEach(bonziData => {
+		screenbonzis({id:bonziData.id}).leave();
+	});
     userAmt = userlist.length;
     for(i=0;i<userAmt;i++){
         var newuser = new bonzi(userlist[i].color,randompos("x"),randompos("y"),{name: userlist[i].name, id: userlist[i].id});
