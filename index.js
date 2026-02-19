@@ -60,11 +60,21 @@ let config = {
 				return thisSocket.user;
 			}
 		},
+		"name":(thisSocket,eventData)=>{
+			if(typeof eventData == "string"){
+				eventData = blankify(eventData,config.rooms.nameLength);
+				
+				let roomUsers = getUsers(thisSocket.user.roomId);
+				let publicUser = getUsers(thisSocket.user.roomId)[thisSocket.user.roomIndex];
+				
+				thisSocket.user = updateUser(thisSocket.user,{name:eventData},true);
+				return thisSocket.user;
+			}
+		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
 			console.log(eventData);
 			if(typeof eventData == "object"){
-				console.log({by:thisSocket.user.id,to:blankify(eventData.to)});
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
 		}
@@ -125,11 +135,15 @@ function hasUser(roomId,guid){
 	result = publicrooms[roomId].users.some(r => guid == r.id);
 	return result;
 }
-function eventRoom(eventName,messageData,originalUser){
+function eventRoom(eventName,messageData,originalUser,displayLocal=false){
 	let currentRoom = publicrooms[originalUser.roomId];
 	if(currentRoom.users.some(r => r.id == originalUser.id)){
 		currentRoom.users.forEach(fullUser => {
-			if(fullUser.socketId !== originalUser.socketId){
+			if(fullUser.socketId == originalUser.socketId){
+				if(displayLocal){
+					io.to(fullUser.socketId).emit(eventName,messageData);
+				}
+			} else {
 				io.to(fullUser.socketId).emit(eventName,messageData);
 			}
 		});
@@ -238,7 +252,7 @@ io.on("connection", function(socket){
 							eventRoom("msg",data,socket.user);
 							socket.emit("msg",data);
 							socket.user.msgAttempts--;
-						},socket.user.msgAttempts*config.rateLimit);
+						},(socket.user.msgAttempts-1)*config.rateLimit);
 					}
 				});
 				socket.on("command", (data) => {
@@ -262,6 +276,7 @@ io.on("connection", function(socket){
 
 				socket.on("disconnect", () => {
 					publicrooms[socket.user.roomId].users.splice(socket.user.roomIndex,1);
+					eventRoom('leave',{id:socket.user.id},socket.user);
 					if(typeof skiddieWatch[socket.user.ip] == "object"){
 						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn)skiddieWatch[socket.user.ip].instances--;
 						
