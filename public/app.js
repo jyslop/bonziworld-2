@@ -218,8 +218,19 @@ class Dialog {
         this.element.style.top = `${y}px`;
     }
 }
+let colorCache = {
+  "/img/bonzi/red.png":null,
+  "/img/bonzi/green.png":null,
+  "/img/bonzi/blue.png":null,
+  "/img/bonzi/purple.png":null,
+  "/img/bonzi/pink.png":null,
+  "/img/bonzi/black.png":null,
+  "/img/bonzi/brown.png":null,
+  "/img/bonzi/bcn.png":null,
+  "/img/bonzi/smile.png":null,
+};
 function bonzi(colorurl,left,top,property){
-	console.log(property);
+  console.log(property);
   var width = 200;
   var height = 160;
   var rows = 21;
@@ -455,9 +466,14 @@ function bonzi(colorurl,left,top,property){
     $(".bonzi_canvas").on("mousedown", hidectx);
     $(".icon").click(hidectx);
     $("#chat_message").click(hidectx);
+	let toName = screenbonzis({id:localId}).name;
+	if(toName.includes('<i style=') && toName.includes('</i>')){
+		toName = toName.substring(toName.indexOf('>'),toName.length);
+		toName = toName.substring(0,toName.indexOf('<'));
+	}
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
-			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${screenbonzis({id:localId}).name}"});'>Call an asshole</p>
+			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
 		</div>`);
     return false;
   }
@@ -569,9 +585,10 @@ function login(){
     thisbonzi.talk({text: newMsg});
   });
   socket.on("asshole", (data) => {
+	  console.log(data);
     let thisbonzi = screenbonzis({id: data.by});
 	let queue = ["Hey, " + data.to + "!","You're a fucking asshole!"];
-    queue.forEach((queueText,i) => { setTimeout(() => {thisbonzi.talk({text:queueText});},i*txtDuration(queueText)); });
+    queue.forEach((queueText,i) => { setTimeout(() => {console.log(queueText); thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
   });
   socket.on("updateUser", (data) => {
     var n = data.name;
