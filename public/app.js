@@ -646,9 +646,9 @@ function login(){
   $("#login_load").show();
   socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
 
-  $("#chat_message").keypress((e) => {
-    if(e.which == 13) sendMsg();
-  });
+  document.getElementById("chat_message").onkeyup = (e) => {
+    if(e.key == 'Enter') sendMsg();
+  };
   var clickhandlers = [
     {id: "#chat_send", func: () => {
       sendMsg();
