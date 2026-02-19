@@ -629,7 +629,11 @@ function resetUsers(userlist){
    
     updateUsers();
 }
+let listenerNames = ["msg","asshole","userlist","leave","newuser","room"];
+
 function login(){
+	listenerNames.forEach(listenerName => {socket.off(listenerName);});
+	if(!socket.connected)socket.connect();
 	Object.keys(applets).forEach(appletName => {
 		let currentApplet = applets[appletName];
 		document.getElementById(currentApplet.buttonId).onclick = () => {
