@@ -59,6 +59,15 @@ let config = {
 				thisSocket.user = updateUser(thisSocket.user,{color:eventData},true);
 				return thisSocket.user;
 			}
+		},
+		"asshole":(thisSocket,eventData)=>{
+			
+			eventData = {to:eventData};
+			console.log(eventData);
+			if(typeof eventData == "object"){
+				if(typeof eventData !== "string")return;
+				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
+			}
 		}
 	}
 };
@@ -80,7 +89,7 @@ var botmsg = [
 
 var publicrooms ={ "default":{ 
    users: [
-    {name: "BonziBUDDY<br> <i style='color:purple;'>(모)</i>", color: "/img/bonzi/purple.png", id: "bonzibuddy", pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy"}
+    {name: "BonziBUDDY<br> <i style='color:purple;'>(ыки)</i>", color: "/img/bonzi/purple.png", id: "bonzibuddy", pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy"}
   ]
 }};
 let skiddieWatch = {};
@@ -110,6 +119,11 @@ function getUsers(roomId){
 		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats};
 		result.push(obfuscatedUser);
 	});
+	return result;
+}
+function hasUser(roomId,guid){
+	let result = false;
+	result = publicrooms[roomId].users.some(r => guid == r.id);
 	return result;
 }
 function eventRoom(eventName,messageData,originalUser){
@@ -162,7 +176,8 @@ io.on("connection", function(socket){
 		canMsg:true,
 		pitch:80,
 		speed:60,
-		socketId:socket.id
+		socketId:socket.id,
+		msgAttempts:0
 	};
 	
 	socket.on("login", (data) => {
@@ -204,6 +219,7 @@ io.on("connection", function(socket){
 				socket.user.loggedIn=true;
 			
 				socket.on("msg", (data) => {
+					
 					if(typeof data == "object"){
 						if(typeof data.msg !== "string")return;
 						data.msg = blankify(data.msg);
@@ -218,16 +234,25 @@ io.on("connection", function(socket){
 						} else {
 							data = {msg:data.msg,id:socket.user.id};
 						}
-						eventRoom("msg",data,socket.user);
-						socket.emit("msg",data);
+						socket.user.msgAttempts++;
+						setTimeout(() => {
+							eventRoom("msg",data,socket.user);
+							socket.emit("msg",data);
+							socket.user.msgAttempts--;
+						},socket.user.msgAttempts*config.rateLimit);
 					}
 				});
 				socket.on("command", (data) => {
 					if(typeof data == "object"){
-						if(typeof data.type !== "string" || typeof data.param !== "string")return;
+						if(typeof data.type == "undefined" || typeof data.param !== "string")return;
 						if(Object.keys(config.commands).includes(data.type)){
-							let cmdresult = config.commands[data.type](socket,data.param);
-							if(typeof cmdresult == "object")socket.user = cmdresult;
+							socket.user.msgAttempts++;
+							setTimeout(() => {
+								let cmdresult = config.commands[data.type](socket,data.param);
+								if(typeof cmdresult == "object")socket.user = cmdresult;
+								socket.user.msgAttempts--;
+							},socket.user.msgAttempts*config.rateLimit);
+							
 						}
 					}
 					/*{
