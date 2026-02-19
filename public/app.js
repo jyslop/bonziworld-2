@@ -595,6 +595,17 @@ function screenbonzis(properties){
   }
   return bonziselect;
 }
+function resetUsers(userlist){
+	bonzislist = [];
+    userAmt = userlist.length;
+    for(i=0;i<userAmt;i++){
+        var newuser = new bonzi(userlist[i].color,randompos("x"),randompos("y"),{name: userlist[i].name, id: userlist[i].id});
+		newuser.queue = bonzislist.length;
+        bonzislist.push(newuser);
+    }
+   
+    updateUsers();
+}
 function login(){
 	Object.keys(applets).forEach(appletName => {
 		let currentApplet = applets[appletName];
@@ -637,16 +648,7 @@ function login(){
     }
   });
   socket.on("userlist", (data) => {
-	console.log(data.list);
-    userlist = data.list;
-    userAmt = userlist.length;
-    for(i=0;i<userAmt;i++){
-        var newuser = new bonzi(userlist[i].color,randompos("x"),randompos("y"),{name: userlist[i].name, id: userlist[i].id});
-		newuser.queue = bonzislist.length;
-        bonzislist.push(newuser);
-    }
-   
-    updateUsers();
+	resetUsers(data.list);
   });
   socket.on("newuser", (data) => {
     var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id});
