@@ -1,5 +1,3 @@
-
-
 var socket = io(location.href);
 var first = true;
 var userAmt = 0;
@@ -59,8 +57,68 @@ let applets = {
 	}
 };
 
+function clampBonziPosition(x, y) {
+	var xmax = $(window).width() - 200;
+	var ymax = $(window).height() - 160 - 30;
+	var cx = Math.max(0, Math.min(x, xmax));
+	var cy = Math.max(0, Math.min(y, ymax));
+	return {x: cx, y: cy};
+}
+
+function clampAllBonzis() {
+	for (var i = 0; i < bonzislist.length; i++) {
+		var b = bonzislist[i];
+		var el = document.getElementById(b.id);
+		if (el) {
+			var cx = parseInt(el.style.left) || 0;
+			var cy = parseInt(el.style.top) || 0;
+			var clamped = clampBonziPosition(cx, cy);
+			b.move({x: clamped.x + "px", y: clamped.y + "px"});
+		}
+	}
+}
+
+$(window).on("resize", function() {
+	clampAllBonzis();
+	var iconBar = document.querySelector(".icon_bar");
+	if (iconBar) {
+		if ($(window).width() < 600) {
+			iconBar.style.display = "none";
+		} else {
+			iconBar.style.display = "flex";
+		}
+	}
+	updateIconToggleButton();
+});
+
+function updateIconToggleButton() {
+	var btn = document.getElementById("icon_toggle_btn");
+	if (!btn) return;
+	if ($(window).width() < 600) {
+		btn.style.display = "block";
+	} else {
+		btn.style.display = "none";
+		var iconBar = document.querySelector(".icon_bar");
+		if (iconBar) iconBar.style.display = "flex";
+	}
+}
 
 $(window).load(function(){
+  var toggleBtn = document.createElement("div");
+  toggleBtn.id = "icon_toggle_btn";
+  toggleBtn.innerHTML = "&#9776;";
+  toggleBtn.style.cssText = "position:fixed;top:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.55);color:white;font-size:22px;width:36px;height:36px;display:none;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;user-select:none;";
+  document.body.appendChild(toggleBtn);
+
+  toggleBtn.onclick = function() {
+    var iconBar = document.querySelector(".icon_bar");
+    if (iconBar) {
+      iconBar.style.display = (iconBar.style.display === "flex") ? "none" : "flex";
+    }
+  };
+
+  updateIconToggleButton();
+
   document.addEventListener("touchstart", touchHandler, true);
   document.addEventListener("touchmove", touchHandler, true);
   document.addEventListener("touchend", touchHandler, true);
@@ -94,7 +152,7 @@ function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 function Id(length) {
-   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';let result = '';
+   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';var result = '';
    for (let i = 0; i < length; i++){
       result += characters.charAt(Math.floor(Math.random() * characters.length));
    }
@@ -305,6 +363,11 @@ function bonzi(colorurl,left,top,property){
   var move = (properties) => {
     var yInt = parseInt(properties.y);
     var xInt = parseInt(properties.x);
+
+    var clamped = clampBonziPosition(xInt, yInt);
+    xInt = clamped.x;
+    yInt = clamped.y;
+
     var namey = yInt - 10;
     var namex = xInt - 10;
     var chaty = namey + 65;
@@ -318,8 +381,8 @@ function bonzi(colorurl,left,top,property){
     document.getElementById("chat_"+localId).style.top = chaty + "px";
     document.getElementById("point_"+localId).style.top = pointy + "px";
     document.getElementById("point_"+localId).style.left = pointx + "px";
-    canvas.style.left = properties.x;
-    canvas.style.top = properties.y;
+    canvas.style.left = xInt + "px";
+    canvas.style.top = yInt + "px";
   }
   var talk = (properties) => {
 	 
@@ -397,23 +460,45 @@ function bonzi(colorurl,left,top,property){
     var yInt = parseInt(document.getElementById(localId).style.top);
     var xInt = parseInt(document.getElementById(localId).style.left);
     move({x: xInt, y: yInt})
-    //let x = 0;
-    //let y = 0;
-    //var col = columns * width - width;
-    //var row = rows * height - height;
-    //setInterval(() => {
-      //if(y > row){y = 0;x = 0;}
-      //if(x > col){x = 0; y+=height;}
-
-      //draw(x,y);
-      //x+=200;
-    //},80);
   }
   var mousestat = "up";
+
+  var touchDragActive = false;
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var bonziStartX = 0;
+  var bonziStartY = 0;
+
+  canvas.addEventListener("touchstart", function(e) {
+    e.preventDefault();
+    touchDragActive = true;
+    var t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    bonziStartX = parseInt(canvas.style.left) || 0;
+    bonziStartY = parseInt(canvas.style.top) || 0;
+    $("body").css({"user-select":"none"});
+  }, {passive: false});
+
+  canvas.addEventListener("touchmove", function(e) {
+    e.preventDefault();
+    if (!touchDragActive) return;
+    var t = e.touches[0];
+    var dx = t.clientX - touchStartX;
+    var dy = t.clientY - touchStartY;
+    var nx = bonziStartX + dx;
+    var ny = bonziStartY + dy;
+    move({x: nx + "px", y: ny + "px"});
+  }, {passive: false});
+
+  canvas.addEventListener("touchend", function(e) {
+    touchDragActive = false;
+    $("body").css({"user-select":"auto"});
+  }, {passive: false});
+
   var mouseloop = setInterval(() => {
     var xmax = $(window).width() - 200;
-    let neg = (int) => {return 0-int;}
-    var ymax = $(window).height();
+    var ymax = $(window).height() - 160 - 30;
     var newx = mousex - 90;
     var newy = mousey - 90;
     var xqueue = newx > 0 && newx < xmax;
@@ -612,7 +697,7 @@ socket.on("err",(errorTxt)=>alert(errorTxt));
 	`})
   });
     var randompos = (type) => {
-      var maxh = $(window).height() - 180;
+      var maxh = $(window).height() - 180 - 30;
       var maxw = $(window).width() - 180;
       
       var newx1 = Math.floor(Math.random() * maxw);
