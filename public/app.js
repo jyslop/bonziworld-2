@@ -458,7 +458,7 @@ function bonzi(colorurl,left,top,property){
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class='context_text' id='${localId}_asshole'>Call an asshole</p>
-		/div>`);
+		</div>`);
     return false;
   }
 }
