@@ -653,6 +653,10 @@ function login(){
 			}
 		};
 	});
+	document.getElementById('chat_start').onclick = () => {
+		document.getElementById('startmenu').style.display = 'flex';
+		document.body.onmouseup = (e) => {if(e.target.id !== 'startmenu')document.getElementById('startmenu').style.display='none';};
+	};
   $("#login_card").hide();
   $("#login_load").show();
   socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
@@ -666,7 +670,8 @@ function login(){
     }}
   ];
   for(i = 0; i < clickhandlers.length; i++){
-    document.getElementById(clickhandlers[i].id.substring(1)).onclick = () => {clickhandlers[i].func()};
+	  let functions = clickhandlers[i].func;
+    document.getElementById(clickhandlers[i].id.substring(1)).onclick = () => {functions();};
   }
 
   socket.on("room", (data) => {
