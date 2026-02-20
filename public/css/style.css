@@ -196,9 +196,9 @@ background-image: url(/img/bonzi/bubble_point.png)
     left: -25%;
 }
 
- .icon_bar {
-    width: 100px;
-    height: 90%;
+.icon_bar {
+    width: 90px;
+    height: 80%;
     position: absolute;
     padding: 20px;
     top: 5px;
@@ -209,16 +209,43 @@ background-image: url(/img/bonzi/bubble_point.png)
     flex-direction: column;
     gap: 30px;
 }
-
-  #chat_bar {
+#chat_bar {
     position: absolute;
-    bottom: 0;
+    bottom: -1px;
     left: 0;
     width: 100%;
     height: 30px;
+    display: flex;
     background-image: url("../img/desktop/taskbar.png");
     background-size: 100% 100%;
-    z-index: 999; }
+    z-index: 999;
+}
+#chat_start {
+    width: 100px;
+    height: 29px;
+    background-image: url("../img/desktop/start.png");
+    background-size: 104% 315%;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    color: #fff;
+    font-style: italic;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 16px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
+    padding-left: 68px;
+    padding-top: 7px;
+    margin-left: -100px;
+    position: relative;
+    left: 135px;
+    z-index: -1;
+}
+#chat_start:hover {
+    background-position: 0px -31px;
+}
+#chat_start:active {
+	background-position: 0px -62px;
+}
   #extras_bar {
     position: absolute;
     bottom: 0;
@@ -237,11 +264,11 @@ background-image: url(/img/bonzi/bubble_point.png)
     filter: brightness(0.8);
   }
 
-  #chat_send {
+#chat_send {
     width: 100px;
     height: 29px;
     background-image: url("../img/desktop/start.png");
-    background-size: 100%;
+    background-size: 104% 315%;
     background-repeat: no-repeat;
     box-sizing: border-box;
     color: #fff;
@@ -250,19 +277,24 @@ background-image: url(/img/bonzi/bubble_point.png)
     letter-spacing: 2px;
     font-size: 16px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
-    padding-left: 35px; }
-    #chat_send:hover {
-      background-position: 0 -33px; }
-    #chat_send:active {
-      background-position: 0 -67px; }
+}
+#chat_send:hover {
+    background-position: 0px -31px;
+}
+#chat_send:active {
+	background-position: 0px -62px;
+}
+#chat_send span {
+	position:relative;left:40px;top:5px;
+}
 
 
   #chat_message_cont {
-    width: 100%; 
+    width: 96%;
     position: relative;
-    top: -24px;
-    left: 100px;
-  }
+    top: 4px;
+    left: 60px;
+}
 
   #room_info {
   color: rgba(255, 255, 255, 0.5);
@@ -497,9 +529,6 @@ p {
       font-size: 14px;
       padding: 5px;
     }
-    #chat_message_cont {
-      left: 70px;
-    }
   }
 
   #icon_toggle_btn {
@@ -510,3 +539,44 @@ p {
 
   #page_error, #page_ban, #page_unsupp {
     background-color: rgba(0, 0, 0, 0.5); }
+	.startmenu {
+    position: absolute;
+    width: 40%;
+    height: 275px;
+    background: white;
+    z-index: 99;
+    left: 0px;
+    bottom: 28px;
+    display: flex;
+    flex-direction: column;
+}
+#startmenu {
+    position: absolute;
+    width: 40%;
+    height: 275px;
+    background: white;
+    z-index: 99;
+    left: 0px;
+    bottom: 28px;
+    display: none;
+    flex-direction: column;
+}
+.startbanner {
+    background-image: linear-gradient(white, #8738e3);
+    display: flex;
+    width: 100%;
+    height: 25%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+.startitems {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.startselection {
+	display:flex;flex-direction:row;
+	gap:5px;
+}
