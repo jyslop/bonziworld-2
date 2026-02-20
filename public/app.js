@@ -670,8 +670,12 @@ function login(){
     }},
 	{id: "#bonzivm_start", func: () => {
       window.bonziVMsrc="none";
-            new Dialog({title:"BonziVM",width:'800',height:'600',html:`
-<iframe id="bonzivm_output" width="795" height="555" style="display:none;"></iframe>
+			let newWidth = 800;
+			let newHeight = 600;
+			if(isMobile){newWidth=300; newHeight=650;};
+            new Dialog({title:"BonziVM",width:newWidth,height:newHeight,html:`
+			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;">
+			<iframe id="bonzivm_output" width="${newWidth}" height="${newHeight}" style="display:none;"></iframe></div>
 <div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;">
     <p id="serverstatus">Selected server: none</p>
     <button onclick="
