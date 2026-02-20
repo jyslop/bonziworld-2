@@ -667,6 +667,43 @@ function login(){
   var clickhandlers = [
     {id: "#chat_send", func: () => {
       sendMsg();
+    }},
+	{id: "#bonzivm_start", func: () => {
+      window.bonziVMsrc="none";
+            new Dialog({title:"BonziVM",width:'800',height:'600',html:`
+<iframe id="bonzivm_output" width="795" height="555" style="display:none;"></iframe>
+<div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;">
+    <p id="serverstatus">Selected server: none</p>
+    <button onclick="
+        mainmenu_vm.style.display='none';
+        bonzivm_output.style.display='block';
+        if(!window.bonziVMsrc.includes('bonzi.gay')){bonzivm_output.src = window.bonziVMsrc;}
+        else{
+        bonzivm_output.srcdoc='<h2>This server has an exception to open in a seperate window, due to chrome security policy.</h2>';
+        window.open(window.bonziVMsrc,'BonziVM','width=600, height=480');
+        }">Run VM</button>
+    <hr>
+    <button onclick="window.bonziVMsrc='https://bonzi.gay';">
+    <h2>Bonzi.Gay</h2>
+    <hr>
+    Erik's standard BonziWORLD.
+    </button>
+    <button onclick="window.bonziVMsrc='https://hugboxworldrevived.onrender.com/';">
+    <h2>HugboxWORLD</h2>
+    <hr>
+    A fucked up BonziWORLD.
+    </button>
+     <button onclick="window.bonziVMsrc='https://bonziworld-revived-1.onrender.com/';">
+    <h2>BonziWORLD Revived Classic</h2>
+    <hr>
+    Seamus's shitty mutated retarded brainchild.
+    </button>
+    <hr>
+    <input type="text" placeholder="Custom BonziWORLD URL" id="customurl"><button onclick="window.bonziVMsrc=customurl.value;">Submit</button>
+    <br>
+    <p>Optionally, input a BonziWORLD server URL and BonziVM will attempt to run it</p>
+</div>
+`});
     }}
   ];
   for(i = 0; i < clickhandlers.length; i++){
