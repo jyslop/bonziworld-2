@@ -565,8 +565,8 @@ p {
     flex-direction: column;
 }
 .startbanner {
-    background: #a15be3;
-	background: linear-gradient(0deg, rgba(161, 91, 227, 1) 16%, rgba(112, 32, 232, 1) 90%, rgba(224, 186, 255, 1) 100%);
+    background: #a872db;
+	background: linear-gradient(0deg, rgba(168, 114, 219, 1) 16%, rgba(119, 64, 201, 1) 90%, rgba(224, 186, 255, 1) 100%);
     display: flex;
     width: 100%;
     height: 25%;
