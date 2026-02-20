@@ -107,7 +107,7 @@ $(window).load(function(){
   var toggleBtn = document.createElement("div");
   toggleBtn.id = "icon_toggle_btn";
   toggleBtn.innerHTML = "&#9776;";
-  toggleBtn.style.cssText = "position:fixed;top:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.55);color:white;font-size:22px;width:36px;height:36px;display:none;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;user-select:none;";
+  toggleBtn.style.cssText = "position:fixed;bottom:50px;right:8px;z-index:99999;background:rgba(0,0,0,0.55);color:white;font-size:22px;width:36px;height:36px;display:none;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;user-select:none;";
   document.body.appendChild(toggleBtn);
 
   toggleBtn.onclick = function() {
@@ -616,21 +616,32 @@ function screenbonzis(properties){
         return newy1 + "px";
       }
     };
-function resetUsers(userlist){
-	bonzislist.forEach(bonziData => {
-		screenbonzis({id:bonziData.id}).leave();
-	});
+function resetUsers(userlist) {
+    [...bonzislist].forEach(bonziData => {
+        screenbonzis({id: bonziData.id}).leave();
+    });
+    bonzislist = [];
+    
     userAmt = userlist.length;
-    for(i=0;i<userAmt;i++){
-        var newuser = new bonzi(userlist[i].color,randompos("x"),randompos("y"),{name: userlist[i].name, id: userlist[i].id});
-		newuser.queue = bonzislist.length;
+    for (i = 0; i < userAmt; i++) {
+        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id});
+        newuser.queue = bonzislist.length;
         bonzislist.push(newuser);
     }
-   
     updateUsers();
 }
 let listenerNames = ["msg","asshole","userlist","leave","newuser","room"];
-
+function reconnect(){
+	resetUsers([]);
+	socket.connect();
+	let loginSuccess = false;
+	let loginLoop = () => {
+		login();
+		loginSuccess = bonzislist.length > 0;
+		if(!loginSuccess)setTimeout(loginLoop,5000);
+	};
+	setTimeout(loginLoop,2000);
+}
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -706,6 +717,7 @@ function login(){
   });
 socket.on("err",(errorTxt)=>alert(errorTxt));
   socket.on("disconnect", () => {
+	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
 		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
