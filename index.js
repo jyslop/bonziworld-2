@@ -34,7 +34,7 @@ function Idgen(length) {
  
 app.use(express.static('public'));
 app.use('/img', express.static(__dirname + '/public/img'));
-http.listen(process.env.PORT || 10000, function() {
+http.listen(process.env.PORT || 3000, function() {
   var host = http.address().address
   var port = http.address().port
   console.log('BonziWORLD XP is listening at port %s' + '!', port)
@@ -252,7 +252,7 @@ io.on("connection", function(socket){
 							eventRoom("msg",data,socket.user);
 							socket.emit("msg",data);
 							socket.user.msgAttempts--;
-						},(socket.user.msgAttempts-1)*config.rateLimit);
+						},(socket.user.msgAttempts)*config.rateLimit);
 					}
 				});
 				socket.on("command", (data) => {
