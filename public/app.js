@@ -672,7 +672,7 @@ function login(){
       window.bonziVMsrc="none";
 			let newWidth = 800;
 			let newHeight = 600;
-			if(isMobile){newWidth=300; newHeight=650;};
+			if(isMobile()){newWidth=300; newHeight=650;};
             new Dialog({title:"BonziVM",width:newWidth,height:newHeight,html:`
 			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;">
 			<iframe id="bonzivm_output" width="${newWidth}" height="${newHeight}" style="display:none;"></iframe></div>
