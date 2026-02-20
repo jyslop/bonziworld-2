@@ -170,7 +170,7 @@ background-image: url(/img/bonzi/bubble_point.png)
       left: 0;
       width: 40px;
       height: 40px;
-      background-size: cover;
+      background-size: cover;user-select:none;
       filter: drop-shadow(1px 1px 5px rgba(0,0,0,0.6))
   }
 
@@ -231,6 +231,7 @@ background-image: url(/img/bonzi/bubble_point.png)
     font-style: italic;
     font-weight: bold;
     letter-spacing: 2px;
+	user-select:none;
     font-size: 16px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
     padding-left: 68px;
@@ -276,6 +277,7 @@ background-image: url(/img/bonzi/bubble_point.png)
     font-weight: bold;
     letter-spacing: 2px;
     font-size: 16px;
+	user-select:none;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
 }
 #chat_send:hover {
@@ -306,7 +308,7 @@ background-image: url(/img/bonzi/bubble_point.png)
   font-size: 16px;
   position: absolute;
   bottom: 30px;
-  right: 0;
+  right: 0;user-select:none;
   user-select: text;
   -webkit-user-select: text;}
 
@@ -563,11 +565,13 @@ p {
     flex-direction: column;
 }
 .startbanner {
-    background-image: linear-gradient(#e5c2ff, #8536e0);
+    background: #a15be3;
+	background: linear-gradient(0deg, rgba(161, 91, 227, 1) 16%, rgba(112, 32, 232, 1) 90%, rgba(224, 186, 255, 1) 100%);
     display: flex;
     width: 100%;
     height: 25%;
     flex-direction: row;
+	user-select:none;
     justify-content: flex-start;
     align-items: center;
     gap: 20px;
@@ -584,5 +588,14 @@ p {
 }
 .startselection {
 	display:flex;flex-direction:row;
+	user-select:none;
 	gap:5px;
+}
+.startselection:hover{
+	background:rgba(0,50,220,0.3);
+}
+.startbreak {
+	width:95%;
+	background:gray;
+	height:1px;
 }
