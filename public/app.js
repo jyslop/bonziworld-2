@@ -674,13 +674,14 @@ function login(){
 			let newHeight = 600;
 			if(isMobile()){newWidth=300; newHeight=650;};
             new Dialog({title:"BonziVM",width:newWidth,height:newHeight,html:`
-			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;">
+			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;display:none;" id="bonzivmcontainer">
 			<iframe id="bonzivm_output" width="${newWidth}" height="${newHeight}" style="display:none;"></iframe></div>
 <div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;">
     <p id="serverstatus">Selected server: none</p>
     <button onclick="
         mainmenu_vm.style.display='none';
         bonzivm_output.style.display='block';
+		document.getElementById('bonzivmcontainer').style.display='block';
         if(!window.bonziVMsrc.includes('bonzi.gay')){bonzivm_output.src = window.bonziVMsrc;}
         else{
         bonzivm_output.srcdoc='<h2>This server has an exception to open in a seperate window, due to chrome security policy.</h2>';
