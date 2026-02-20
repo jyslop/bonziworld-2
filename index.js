@@ -80,7 +80,7 @@ let config = {
 		}
 	}
 };
-var godword = "wewuzchatascoloredmonkeyznsheit"
+var godword = "wewuzchatascoloredmunkeez";
 var colorList = {
   "red":"/img/bonzi/red.png",
   "green":"/img/bonzi/green.png",
