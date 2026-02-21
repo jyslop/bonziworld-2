@@ -58,6 +58,16 @@ let applets = {
 				<div id="row_color2" style="display:flex;flex-direction:row;">
 					
 				</div>
+				<input type="text" placeholder="crosscolor (optional, catbox.moe only)" id="ccurl">
+				<button onclick="socket.emit('command',{type:'color',param:document.getElementById('ccurl').value});">submit CC</button>
+				&nbsp;
+				&nbsp;
+				&nbsp;
+				&nbsp;
+				&nbsp;
+				&nbsp;
+				&nbsp;
+				<button onclick="window.open('https://catbox.moe');">Catbox</button>
 				<hr>
 				Name:<br>
 				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value});">Set Name</button>
@@ -330,6 +340,7 @@ function bonzi(colorurl,left,top,property){
   var columns = 17;
   var localId = property.id;
   this.mute = false;
+  var isStaticImage = false;
 
   if(property.pitch == undefined){
     property.pitch = 80;
@@ -348,9 +359,17 @@ function bonzi(colorurl,left,top,property){
   var img = new Image();
   var draw = (x,y) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+    if(isStaticImage){
+      ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, width, height);
+    } else {
+      ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+    }
   }
   var animate = (properties) => {
+    if(isStaticImage){
+      draw(0,0);
+      return;
+    }
     if(properties.type == "idle"){
       draw(0,0);
     } 
@@ -458,6 +477,7 @@ function bonzi(colorurl,left,top,property){
   } 
   var update = (properties) => {
     $("#name_" + localId).html(properties.name);
+    isStaticImage = false;
     img.src = properties.color;
     draw(0,0);
     animate({type: "idle"});
@@ -499,6 +519,11 @@ function bonzi(colorurl,left,top,property){
 
   img.src = colorurl;
   img.onload = function() {
+    if(img.naturalWidth === 3400 && img.naturalHeight === 3360){
+      isStaticImage = false;
+    } else {
+      isStaticImage = true;
+    }
     draw(0,0);
     var yInt = parseInt(document.getElementById(localId).style.top);
     var xInt = parseInt(document.getElementById(localId).style.left);
@@ -603,9 +628,8 @@ function bonzi(colorurl,left,top,property){
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
 		</div>`);
-		let rr = document.body.onmouseup; document.body.onmouseup = (e) => {
-			if(typeof rr == "function"){rr();} 
-			if(e.target.id !== 'context_'+localId)document.getElementById('context_'+localId).style.display='none';
+		 document.body.onmouseup = (e) => {
+			if(e.target.id !== 'context_'+localId && document.getElementById('context_'+localId) != null)document.getElementById('context_'+localId).style.display='none';
 		};
     return false;
   }
@@ -727,9 +751,7 @@ function login(){
 	});
 	document.getElementById('chat_start').onclick = () => {
 		if(document.getElementById('startmenu').style.display == 'none')document.getElementById('startmenu').style.display = 'flex';
-		let rr = document.body.onmouseup; document.body.onmouseup = (e) => {
-			
-			if(typeof rr == "function"){rr(e);} 
+		document.getElementById('content').onmouseup = (e) => {
 			if(e.target.id !== 'startmenu')document.getElementById('startmenu').style.display='none';
 		};
 	};
