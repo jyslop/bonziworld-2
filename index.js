@@ -52,7 +52,7 @@ let config = {
 			if(typeof eventData == "string"){
 				
 				if(!config.imageWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
-				if(colorNames.includes(eventData))eventData=colorList[eventData];
+				if(colorNames.includes(eventData) && eventData !== "pope")eventData=colorList[eventData];
 				let roomUsers = getUsers(thisSocket.user.roomId);
 				let publicUser = getUsers(thisSocket.user.roomId)[thisSocket.user.roomIndex];
 				
@@ -77,6 +77,12 @@ let config = {
 			if(typeof eventData == "object"){
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
+		},
+		"godmode":(thisSocket,param)=>{
+			if(param == godword){
+				thisSocket.user.level=3;
+				
+			}
 		}
 	}
 };
@@ -94,7 +100,7 @@ var colorList = {
 };
 let colorNames = Object.keys(colorList);
 var botmsg = [
-"- hi",'- "me jew"',"UTTP is full of pedophiles, BIA will bring the UTTP to a slow and painful death by 2027"];
+"- hi",'- bundasworld revive HD deluxe ++'];
 
 var publicrooms ={ "default":{ 
    users: [
@@ -150,11 +156,15 @@ function eventRoom(eventName,messageData,originalUser,displayLocal=false){
 	}
 }
 function updateUser(originalUser,socketData,localDisplay=false){
+	let result = Object.assign(originalUser,socketData);
 	let currentRoom = publicrooms[originalUser.roomId];
-	let result = {};
-	
+	console.log(JSON.stringify(currentRoom));
+	if(typeof currentRoom != 'object'){
+		publicrooms[originalUser.roomId]={users:[]};
+		currentRoom = publicrooms[result.roomId];
+		result.roomIndex = currentRoom.users.length;
+	}
 	if(currentRoom.users.some(r => r.id == originalUser.id)){
-		result = Object.assign(originalUser,socketData);
 		publicrooms[result.roomId].users[result.roomIndex] = result;
 		
 		let roomUsers = getUsers(result.roomId);
@@ -163,8 +173,7 @@ function updateUser(originalUser,socketData,localDisplay=false){
 		eventRoom("updateUser",publicUser,originalUser);
 		if(localDisplay)io.to(originalUser.socketId).emit("updateUser",publicUser);		
 	} else {
-		originalUser.roomIndex = currentRoom.users.length;
-		result = Object.assign(originalUser,socketData);
+		result.roomIndex = currentRoom.users.length;
 		
 		publicrooms[result.roomId].users.push(result);
 	}
@@ -190,7 +199,8 @@ io.on("connection", function(socket){
 		pitch:80,
 		speed:60,
 		socketId:socket.id,
-		msgAttempts:0
+		msgAttempts:0,
+		level:1
 	};
 	
 	socket.on("login", (data) => {
@@ -257,11 +267,11 @@ io.on("connection", function(socket){
 				});
 				socket.on("command", (data) => {
 					if(typeof data == "object"){
-						if(typeof data.type == "undefined" || typeof data.param !== "string")return;
+						if(typeof data.type !== "string" || typeof data.param !== "string")return;
 						if(Object.keys(config.commands).includes(data.type)){
 							socket.user.msgAttempts++;
 							setTimeout(() => {
-								let cmdresult = config.commands[data.type](socket,data.param);
+								let cmdresult = config.commands[blankify(data.type)](socket,blankify(data.param));
 								if(typeof cmdresult == "object")socket.user = cmdresult;
 								socket.user.msgAttempts--;
 							},socket.user.msgAttempts*config.rateLimit);
