@@ -5,6 +5,39 @@ var userlist = [];
 var bonzislist = [];
 var mousex = 0;
 var mousey = 0;
+function setCookie(cname,cvalue,exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return null;
+}
+
+function saveArray(name,toSave){
+	let stringified = JSON.stringify(toSave);
+	setCookie(name,stringified,365);
+}
+function loadArray(arrayName){
+	let loaded = getCookie(arrayName);
+	let result = JSON.parse(loaded);
+	
+	return result;
+}
 var logtxt = `
 	<i>Welcome to BonziWORLD XP</i>
 	<hr>
@@ -54,7 +87,7 @@ let applets = {
 			</div>
 			`});
 		}
-	}
+	},
 };
 
 function clampBonziPosition(x, y) {
@@ -104,10 +137,10 @@ function updateIconToggleButton() {
 }
 
 $(window).load(function(){
-  var toggleBtn = document.createElement("div");
+  var toggleBtn = document.createElement("button");
   toggleBtn.id = "icon_toggle_btn";
   toggleBtn.innerHTML = "&#9776;";
-  toggleBtn.style.cssText = "position:fixed;bottom:50px;right:8px;z-index:99999;background:rgba(0,0,0,0.55);color:white;font-size:22px;width:36px;height:36px;display:none;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;user-select:none;";
+  toggleBtn.style.cssText = "position:fixed;bottom:50px;right:8px;z-index:99999;font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;user-select:none;";
   document.body.appendChild(toggleBtn);
 
   toggleBtn.onclick = function() {
@@ -125,7 +158,7 @@ $(window).load(function(){
   document.addEventListener("touchcancel", touchHandler, true);    
   if(isMobile()){
     $("#room_info").hide();
-    $("#page_mobile").show();
+   // $("#page_mobile").show();
   }
   $("#login_card").show();
   $("#login_load").hide();
@@ -186,7 +219,7 @@ function sendMsg(){
   if(msg.startsWith("/")){
     var cmdtype = msg.substring(1, msg.indexOf(" "));
     var param = msg.substring(msg.indexOf(" ") + 1, msg.length);
-    console.log(cmdtype +" "+param);
+
     socket.emit("command",{type: cmdtype, param: param})
   } else {
     socket.emit("msg",{msg: msg});
@@ -195,7 +228,6 @@ function sendMsg(){
 }
 function notif(head, body, top, left, type){
   let localId = Id(10);
-  console.log("bla")
   $("#content").append("<div class='notif' id='"+localId+"' style='top:"+top+";left:"+left+";'><div class='notif_cont'><h3 class='notif_header'>"+head+"</h3><div class='body'>"+body+"</div></div></div>");
   document.body.onresize = () => {
     var info = document.getElementById("info_icon").getBoundingClientRect().x - 330;
@@ -277,18 +309,21 @@ class Dialog {
     }
 }
 let colorCache = {
-  "/img/bonzi/red.png":null,
-  "/img/bonzi/green.png":null,
-  "/img/bonzi/blue.png":null,
-  "/img/bonzi/purple.png":null,
-  "/img/bonzi/pink.png":null,
-  "/img/bonzi/black.png":null,
-  "/img/bonzi/brown.png":null,
-  "/img/bonzi/bcn.png":null,
-  "/img/bonzi/smile.png":null,
+  "red":"/img/bonzi/red.png",
+  "green":"/img/bonzi/green.png",
+  "blue":"/img/bonzi/blue.png",
+  "purple":"/img/bonzi/purple.png",
+  "pink":"/img/bonzi/pink.png",
+  "black":"/img/bonzi/black.png",
+  "brown":"/img/bonzi/brown.png",
+  "bcn":"/img/bonzi/bcn.png",
+  "smile":"/img/bonzi/smile.png",
+  "pope":"/img/bonzi/pope.png"
 };
 function bonzi(colorurl,left,top,property){
-  console.log(property);
+	let urlNames = {};
+	let urlArrays = Object.keys(colorCache).map(r => {urlNames[colorCache[r]] = r; return colorCache[r];});
+  this.color = urlArrays.some(r => r == colorurl || r.includes(colorurl)) ? urlNames[colorurl] : colorurl;
   var width = 200;
   var height = 160;
   var rows = 21;
@@ -461,7 +496,7 @@ function bonzi(colorurl,left,top,property){
   this.top = pos.y;
   this.id = localId;
   this.name = property.name;
-  console.log("Bonzi initialized");
+
   img.src = colorurl;
   img.onload = function() {
     draw(0,0);
@@ -568,6 +603,10 @@ function bonzi(colorurl,left,top,property){
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
 		</div>`);
+		let rr = document.body.onmouseup; document.body.onmouseup = (e) => {
+			if(typeof rr == "function"){rr();} 
+			if(e.target.id !== 'context_'+localId)document.getElementById('context_'+localId).style.display='none';
+		};
     return false;
   }
 }
@@ -642,6 +681,39 @@ function reconnect(){
 	};
 	setTimeout(loginLoop,2000);
 }
+
+let mainAudio = new Audio();
+let mainSrc = "";
+
+
+let musicList = [];
+					let loadedMusic = loadArray('objectsmusic');
+					musicList = typeof loadedMusic == 'object' ? loadedMusic : musicList; 
+					
+					let lastId='';
+					let currentId='';
+					let playSong = (songSrc,songId) => {
+						if(currentId == ''){currentId=songId;}
+						else {
+							lastId=currentId;
+							currentId=songId;
+						}
+						
+						if(lastId.length > 0)document.getElementById(lastId).style.background='initial';document.getElementById(lastId).style.color='white';
+						if(currentId.length > 0){
+							currentId=songId;document.getElementById(currentId).style.color='lime';
+							document.getElementById(currentId).style.background='black';
+							}
+						mainAudio.src = songSrc;
+					};
+					let updateList = () => {
+						saveArray('objectsmusic',musicList);
+						document.getElementById('musicplaylist').innerHTML='';
+						musicList.forEach((musicObject,i) => {
+							document.getElementById('musicplaylist').insertAdjacentHTML('beforeend','<p class="optionmusic" id="'+musicObject.name.substring(0,3)+'" onclick="playSong(musicList['+i.toString()+'].src,this.id);">'+musicObject.name+'&nbsp;&nbsp;&nbsp; || <span onclick="musicList.splice('+i.toString()+',1); updateList();">🗑️</span></p>');
+						});
+						
+					};
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -654,8 +726,12 @@ function login(){
 		};
 	});
 	document.getElementById('chat_start').onclick = () => {
-		document.getElementById('startmenu').style.display = 'flex';
-		document.body.onmouseup = (e) => {if(e.target.id !== 'startmenu')document.getElementById('startmenu').style.display='none';};
+		if(document.getElementById('startmenu').style.display == 'none')document.getElementById('startmenu').style.display = 'flex';
+		let rr = document.body.onmouseup; document.body.onmouseup = (e) => {
+			
+			if(typeof rr == "function"){rr(e);} 
+			if(e.target.id !== 'startmenu')document.getElementById('startmenu').style.display='none';
+		};
 	};
   $("#login_card").hide();
   $("#login_load").show();
@@ -709,7 +785,48 @@ function login(){
     <p>Optionally, input a BonziWORLD server URL and BonziVM will attempt to run it</p>
 </div>
 `});
-    }}
+    }},
+	{
+		id:'#musicplayer_start',
+		func:()=>{
+			new Dialog({title:"Music Player",width:'360',height:'380',html:`
+			    <div style="width:100%;height:100%;overflow:hidden;padding:0;background: rgb(31 65 98);color: white;">
+				
+				
+				
+				<div style="border:1px solid gray;width:300px;height:200px;overflow-y:scroll;overflow-x:hidden;" id="musicplaylist">
+				
+				</div>
+				<div style="background-image: linear-gradient(rgb(105, 163, 212) 0%, white 7%, rgb(163 190 239) 49%, rgb(146, 170, 221) 50%, rgb(66, 100, 190) 100%);
+    height: 140px;
+    padding: 8px;">
+				
+				<button class="mediacontrol" onclick="mainAudio.play();" style="
+					width: 40px;
+					height: 40px;
+				">▶</button>
+				<button class="mediacontrol" onclick="mainAudio.load();">◼️</button>
+				<hr>
+				<input type="text" id="musicname" placeholder="Music name"><input type="text" id="musicurl" placeholder=".mp3 or .wav URL"><br>
+				<button id="musicadd">+ Music</button>
+				
+				</div>
+				
+				</div>
+			`});
+			
+					updateList();
+					document.getElementById('musicadd').onclick = () => {
+						musicList.push({
+							name:document.getElementById('musicname').value.length < 1 ? "Untitled" : document.getElementById('musicname').value,
+							src:document.getElementById('musicurl').value
+						});
+						document.getElementById('musicname').value = '';
+						document.getElementById('musicurl').value = '';
+						updateList();
+					};
+		}
+	}
   ];
   for(i = 0; i < clickhandlers.length; i++){
 	  let functions = clickhandlers[i].func;
@@ -741,21 +858,21 @@ function login(){
     bonzislist.push(newuser);
   });
   socket.on("leave", (data) => {
-	screenbonzis({id:data.id}).leave();
+	if(typeof screenbonzis({id:data.id}).leave == "function")screenbonzis({id:data.id}).leave();
   });
   socket.on("msg", (data) => {
-	console.log(data);
+	
     let thisbonzi = screenbonzis({id: data.id});
+
 	let newMsg = urlify(data.msg.replaceAll('{NAME}',thisbonzi.name).replaceAll('{COLOR}',thisbonzi.color));
 	
     newLog({name:thisbonzi.name,msg:newMsg});
     thisbonzi.talk({text: newMsg});
   });
   socket.on("asshole", (data) => {
-	  console.log(data);
     let thisbonzi = screenbonzis({id: data.by});
 	let queue = ["Hey, " + data.to + "!","You're a fucking asshole!"];
-    queue.forEach((queueText,i) => { setTimeout(() => {console.log(queueText); thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
+    queue.forEach((queueText,i) => { setTimeout(() => { thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
   });
   socket.on("updateUser", (data) => {
     var n = data.name;
