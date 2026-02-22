@@ -41,7 +41,7 @@ http.listen(process.env.PORT || 3000, function() {
 });
 let config = {
 	rateLimit:800,
-	godword:"wewuzchatascoloredmonkeyznsheit",
+	godword:"godmode",
 	rooms:{
 		idLength:50,
 		nameLength:30
