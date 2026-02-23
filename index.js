@@ -4,6 +4,16 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var cors = require('cors')
 
+let proxyASNs = [9009, 20473, 14618]; 
+let { lookup } = require('geoip-lite'); 
+
+function isFucked(ip) {
+	console.log(ip);
+    let geo = lookup(ip);
+	console.log(geo);
+    return geo && proxyASNs.includes(geo.asnum);
+}
+
 app.use(cors());
 const blacklist = [
   "<script>",
@@ -41,7 +51,7 @@ http.listen(process.env.PORT || 3000, function() {
 });
 let config = {
 	rateLimit:800,
-	godword:"godmode",
+	godword:"wewuzchatascoloredmonkeyznsheit",
 	rooms:{
 		idLength:50,
 		nameLength:30
@@ -73,15 +83,63 @@ let config = {
 		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
-			console.log(eventData);
+			//console.log(eventData);
 			if(typeof eventData == "object"){
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
 		},
+		"tag":(thisSocket,eventData)=>{
+			if(thisSocket.user.level > 1 && typeof eventData == "string"){
+				eventData = blankify(eventData,32);
+				thisSocket.user = updateUser(thisSocket.user,{tag:eventData},true);
+				return thisSocket.user;
+			}
+		},
+		"modtag":(thisSocket,eventData)=>{
+			if(thisSocket.user.level > 1 && typeof eventData == "string"){
+				let parts = eventData.split(" ");
+				let targetId = parts[0];
+				let newTag = blankify(parts.slice(1).join(" "),32);
+				let targetRoom = publicrooms[thisSocket.user.roomId];
+				if(targetRoom){
+					let targetUser = targetRoom.users.find(u => u.id == targetId);
+					if(targetUser){
+						updateUser(targetUser,{tag:newTag},true);
+					}
+				}
+			}
+		},
+		"modname":(thisSocket,eventData)=>{
+			if(thisSocket.user.level > 1 && typeof eventData == "string"){
+				let parts = eventData.split(" ");
+				let targetId = parts[0];
+				let newName = blankify(parts.slice(1).join(" "),30);
+				let targetRoom = publicrooms[thisSocket.user.roomId];
+				if(targetRoom){
+					let targetUser = targetRoom.users.find(u => u.id == targetId);
+					if(targetUser){
+						updateUser(targetUser,{name:newName},true);
+					}
+				}
+			}
+		},
+		"nuke":(thisSocket,eventData)=>{
+			if(thisSocket.user.level > 1 && typeof eventData == "string"){
+				let targetRoom = publicrooms[thisSocket.user.roomId];
+				if(targetRoom){
+					let targetUser = targetRoom.users.find(u => u.id == eventData);
+					if(targetUser){
+						io.to(targetUser.socketId).emit("nuke");
+					}
+				}
+			}
+		},
 		"godmode":(thisSocket,param)=>{
-			if(param == godword){
+			//console.log(param == config.godword);
+			if(param == config.godword){
 				thisSocket.user.level=3;
-				
+				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"Pope"},true);
+				return thisSocket.user;
 			}
 		}
 	}
@@ -104,7 +162,7 @@ var botmsg = [
 
 var publicrooms ={ "default":{ 
    users: [
-    {name: "BonziBUDDY<br> <i style='color:purple;'>(ыки)</i>", color: "/img/bonzi/purple.png", id: "bonzibuddy", pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy"}
+    {name: "BonziBUDDY", color: "/img/bonzi/purple.png", id: "bonzibuddy", tag:"<img src='/img/desktop/icons/server.png' class='tagicon'>",pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy"}
   ]
 }};
 let skiddieWatch = {};
@@ -131,7 +189,7 @@ function blankify(txt,limiter=1024){
 function getUsers(roomId){
 	let result = [];
 	publicrooms[roomId].users.forEach(fullUser => {
-		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats};
+		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats,tag:fullUser.tag||""};
 		result.push(obfuscatedUser);
 	});
 	return result;
@@ -158,7 +216,7 @@ function eventRoom(eventName,messageData,originalUser,displayLocal=false){
 function updateUser(originalUser,socketData,localDisplay=false){
 	let result = Object.assign(originalUser,socketData);
 	let currentRoom = publicrooms[originalUser.roomId];
-	console.log(JSON.stringify(currentRoom));
+	//console.log(JSON.stringify(currentRoom));
 	if(typeof currentRoom != 'object'){
 		publicrooms[originalUser.roomId]={users:[]};
 		currentRoom = publicrooms[result.roomId];
@@ -171,7 +229,7 @@ function updateUser(originalUser,socketData,localDisplay=false){
 		let publicUser = getUsers(result.roomId)[result.roomIndex];
 		
 		eventRoom("updateUser",publicUser,originalUser);
-		if(localDisplay)io.to(originalUser.socketId).emit("updateUser",publicUser);		
+		if(localDisplay)io.to(originalUser.socketId).emit("updateUser",Object.assign({},publicUser,{level:originalUser.level}));		
 	} else {
 		result.roomIndex = currentRoom.users.length;
 		
@@ -200,10 +258,19 @@ io.on("connection", function(socket){
 		speed:60,
 		socketId:socket.id,
 		msgAttempts:0,
-		level:1
+		level:1,
+		tag:"",
 	};
 	
 	socket.on("login", (data) => {
+		if(isFucked(socket.user.ip)){
+			socket.emit("err","No proxies allowed right now");
+		}
+		else {
+		
+		
+		
+		
 		if(typeof data == "object"){
 			if(typeof data.name !== "string")return;
 			if(typeof data.room !== "string")return;
@@ -236,7 +303,7 @@ io.on("connection", function(socket){
 				let roomUsers = getUsers(data.room);
 				let publicUser = getUsers(data.room)[socket.user.roomIndex];
 				eventRoom("newuser",publicUser,socket.user);
-				socket.emit("room",{isPublic:true,isOwner:false});
+				socket.emit("room",{isPublic:true,isOwner:false,id:socket.user.roomId});
 				socket.emit("userlist",{list:roomUsers});
 				
 				socket.user.loggedIn=true;
@@ -298,7 +365,11 @@ io.on("connection", function(socket){
 			
 		}
 		}
+		
+		
+		
+		}
 	});
 
 	
-})
+});
