@@ -129,6 +129,7 @@ let config = {
 					let targetUser = targetRoom.users.find(u => u.id == eventData);
 					if(targetUser){
 						io.to(targetUser.socketId).emit("nuke");
+						io.to(targetUser.socketId).disconnect(true);
 					}
 				}
 			}
