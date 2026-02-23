@@ -83,7 +83,6 @@ let config = {
 		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
-			//console.log(eventData);
 			if(typeof eventData == "object"){
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
@@ -135,10 +134,32 @@ let config = {
 			}
 		},
 		"godmode":(thisSocket,param)=>{
-			//console.log(param == config.godword);
 			if(param == config.godword){
 				thisSocket.user.level=3;
 				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"Pope"},true);
+				return thisSocket.user;
+			}
+		},
+		"hat":(thisSocket,eventData)=>{
+			if(typeof eventData == "string"){
+				let hatName = eventData.trim().toLowerCase();
+				let maxHats = thisSocket.user.level >= 3 ? 5 : 2;
+				if(hatName.length < 1){
+					thisSocket.user = updateUser(thisSocket.user,{hats:[]},true);
+					return thisSocket.user;
+				}
+				if(!Object.keys(hatList).includes(hatName))return;
+				let currentHats = thisSocket.user.hats || [];
+				let hatIdx = currentHats.indexOf(hatName);
+				if(hatIdx !== -1){
+					currentHats = currentHats.filter(h => h !== hatName);
+				} else {
+					if(currentHats.length >= maxHats){
+						currentHats = currentHats.slice(1);
+					}
+					currentHats = currentHats.concat([hatName]);
+				}
+				thisSocket.user = updateUser(thisSocket.user,{hats:currentHats},true);
 				return thisSocket.user;
 			}
 		}
@@ -180,7 +201,7 @@ var botmsg = [
 
 var publicrooms ={ "default":{ 
    users: [
-    {name: "BonziBUDDY", color: "/img/bonzi/purple.png", id: "bonzibuddy", tag:"<img src='/img/desktop/icons/server.png' class='tagicon'>",pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy"}
+    {name: "BonziBUDDY", color: "/img/bonzi/purple.png", id: "bonzibuddy", tag:"<img src='/img/desktop/icons/server.png' class='tagicon'>",pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy", hats:[]}
   ]
 }};
 let skiddieWatch = {};
@@ -207,7 +228,7 @@ function blankify(txt,limiter=1024){
 function getUsers(roomId){
 	let result = [];
 	publicrooms[roomId].users.forEach(fullUser => {
-		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats,tag:fullUser.tag||""};
+		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats||[],tag:fullUser.tag||""};
 		result.push(obfuscatedUser);
 	});
 	return result;
@@ -234,7 +255,6 @@ function eventRoom(eventName,messageData,originalUser,displayLocal=false){
 function updateUser(originalUser,socketData,localDisplay=false){
 	let result = Object.assign(originalUser,socketData);
 	let currentRoom = publicrooms[originalUser.roomId];
-	//console.log(JSON.stringify(currentRoom));
 	if(typeof currentRoom != 'object'){
 		publicrooms[originalUser.roomId]={users:[]};
 		currentRoom = publicrooms[result.roomId];
@@ -285,9 +305,6 @@ io.on("connection", function(socket){
 			socket.emit("err","No proxies allowed right now");
 		}
 		else {
-		
-		
-		
 		
 		if(typeof data == "object"){
 			if(typeof data.name !== "string")return;
@@ -363,10 +380,6 @@ io.on("connection", function(socket){
 							
 						}
 					}
-					/*{
-						type:cmdname,
-						param:cmdparam
-					}*/
 				});
 
 				socket.on("disconnect", () => {
