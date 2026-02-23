@@ -5,6 +5,7 @@ var userlist = [];
 var bonzislist = [];
 var mousex = 0;
 var mousey = 0;
+var myLevel = 1;
 function setCookie(cname,cvalue,exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -328,7 +329,6 @@ let colorCache = {
   "brown":"/img/bonzi/brown.png",
   "bcn":"/img/bonzi/bcn.png",
   "smile":"/img/bonzi/smile.png",
-  "pope":"/img/bonzi/pope.png"
 };
 function bonzi(colorurl,left,top,property){
 	let urlNames = {};
@@ -339,6 +339,7 @@ function bonzi(colorurl,left,top,property){
   var rows = 21;
   var columns = 17;
   var localId = property.id;
+  this.id = localId;
   this.mute = false;
   var isStaticImage = false;
 
@@ -348,8 +349,13 @@ function bonzi(colorurl,left,top,property){
   if(property.speed == undefined){
     property.speed = 150;
   }
+  let tagHtml = `<div id='tag_${localId}' class='bonzi_tag'></div>`;
+  if(typeof property.tag != 'string')tagHtml=``;
+  else {
+	  if(property.tag.length < 1)tagHtml=``;
+  }
   content.insertAdjacentHTML('beforeend',`
-  <div id='name_${localId}' style='position:absolute;' class='bonzi_name'>${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};' id='${localId}'></canvas><div id='chat_${localId}' class='bubble_chat'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point'></div>
+  <div id='name_${localId}' style='position:absolute;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};' id='${localId}'></canvas><div id='chat_${localId}' class='bubble_chat'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point'></div>
   `);
   $("#chat_"+localId).hide();
   $("#point_" + localId).hide();
@@ -476,7 +482,17 @@ function bonzi(colorurl,left,top,property){
 
   } 
   var update = (properties) => {
-    $("#name_" + localId).html(properties.name);
+    var tagEl = document.getElementById("tag_" + localId);
+    if(tagEl){
+      if(properties.tag && properties.tag.length > 0){
+        tagEl.innerHTML = properties.tag;
+        tagEl.style.display = "inline";
+      } else {
+        tagEl.innerHTML = "";
+        tagEl.style.display = "none";
+      }
+    }
+    $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + properties.name);
     isStaticImage = false;
     img.src = properties.color;
     draw(0,0);
@@ -512,10 +528,13 @@ function bonzi(colorurl,left,top,property){
   var top = document.getElementById(localId).style.top;
   var pos = {x: left, y: top};
 
-  this.left = pos.x;
-  this.top = pos.y;
-  this.id = localId;
+  this.tag = property.tag || "";
   this.name = property.name;
+
+  if(this.tag && this.tag.length > 0){
+    var tagEl = document.getElementById("tag_" + localId);
+    if(tagEl){tagEl.innerHTML = this.tag; tagEl.style.display = "inline";}
+  }
 
   img.src = colorurl;
   img.onload = function() {
@@ -609,25 +628,32 @@ function bonzi(colorurl,left,top,property){
   }
   document.getElementById(localId).oncontextmenu = () => {
     var parsetop1 = parseInt(document.getElementById(localId).style.top);
-    var hidectx = () => {$("#context_" + localId).hide();{$("#context_" + localId).remove();}}
+    var hidectx = () => {$("#context_" + localId).hide();$("#context_" + localId).remove();}
     var parsetop = parsetop1 + 50;
-    setInterval(() => {
-    if(!$(".context_menu").click() && $("#context").click()){
-      alert("rrrrr")
-    }
-    });
     $(".bonzi_canvas").on("mousedown", hidectx);
     $(".icon").click(hidectx);
     $("#chat_message").click(hidectx);
-	let toName = screenbonzis({id:localId}).name;
-	if(toName.includes('<i style=') && toName.includes('</i>')){
-		toName = toName.substring(toName.indexOf('>'),toName.length);
-		toName = toName.substring(0,toName.indexOf('<'));
+	var foundBonzi = screenbonzis({id:localId});
+	var rawName = (foundBonzi && foundBonzi.name) ? foundBonzi.name : "";
+	var toName = rawName;
+	if(toName.indexOf('<') !== -1){
+		var tmp = document.createElement('div');
+		tmp.innerHTML = toName;
+		toName = tmp.textContent || tmp.innerText || toName;
 	}
+	toName = toName.trim();
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
+			<div id="ctx_mod_${localId}"></div>
 		</div>`);
+	var modDiv = document.getElementById("ctx_mod_"+localId);
+	if(myLevel > 1){
+		modDiv.insertAdjacentHTML('beforeend','<hr style="margin:2px 0;">');
+		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var t=prompt("New tag for '+toName+':");if(t!==null)socket.emit("command",{type:"modtag",param:"'+localId+' "+t});})()\'>Set tag</p>');
+		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var n=prompt("New name for '+toName+':");if(n!==null)socket.emit("command",{type:"modname",param:"'+localId+' "+n});})()\'>Set name</p>');
+		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:red;" onclick=\'if(confirm("Nuke '+toName+'?"))socket.emit("command",{type:"nuke",param:"'+localId+'"})\'>Nuke</p>');
+	}
 		 document.body.onmouseup = (e) => {
 			if(e.target.id !== 'context_'+localId && document.getElementById('context_'+localId) != null)document.getElementById('context_'+localId).style.display='none';
 		};
@@ -635,8 +661,8 @@ function bonzi(colorurl,left,top,property){
   }
 }
 function updateUsers(){
-  userAmt = userlist.length;
-  $("#users_online").html("Users online: "+userAmt);
+  userAmt = bonzislist.length;
+  $("#users_online").html(userAmt);
 }
 function urlify(text) {
   var urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -687,7 +713,7 @@ function resetUsers(userlist) {
     
     userAmt = userlist.length;
     for (i = 0; i < userAmt; i++) {
-        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id});
+        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||""});
         newuser.queue = bonzislist.length;
         bonzislist.push(newuser);
     }
@@ -752,7 +778,9 @@ function login(){
 	document.getElementById('chat_start').onclick = () => {
 		if(document.getElementById('startmenu').style.display == 'none')document.getElementById('startmenu').style.display = 'flex';
 		document.getElementById('content').onmouseup = (e) => {
-			if(e.target.id !== 'startmenu')document.getElementById('startmenu').style.display='none';
+			if (!document.getElementById('startmenu').contains(e.target)) {
+				document.getElementById('startmenu').style.display = 'none';
+			}
 		};
 	};
   $("#login_card").hide();
@@ -872,10 +900,12 @@ function login(){
     }
   });
   socket.on("userlist", (data) => {
+	document.getElementById('users_online').innerText = data.list.length;
 	resetUsers(data.list);
   });
   socket.on("newuser", (data) => {
-    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id});
+	document.getElementById('users_online').innerText = parseInt(document.getElementById('users_online').innerText)+1;
+    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||""});
 	newuser.queue = bonzislist.length;
     bonzislist.push(newuser);
   });
@@ -899,9 +929,14 @@ function login(){
   socket.on("updateUser", (data) => {
     var n = data.name;
     if(data.name !== ""){data.name = n}
-    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id});
+    if(typeof data.level == "number")myLevel = data.level;
+    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||""});
   });
 socket.on("err",(errorTxt)=>alert(errorTxt));
+  socket.on("nuke",()=>{
+    document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
+    socket.disconnect();
+  });
   socket.on("disconnect", () => {
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
     new Dialog({title:'Error',html:`
