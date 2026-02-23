@@ -70,7 +70,7 @@ let applets = {
 		buttonId:"my_bonzi",
 		open:false,
 		onpress:()=>{
-			if(document.body.innerHTML.includes('<input type="text" placeholder="Username" id="usernameswap">'))return;
+			if(document.body.innerHTML.includes('<input type="text" placeholder="Username" id="usernameswap">'))errs["applet_open"]();;
             new Dialog({title:"Settings",width:'400',height:'560',html:`
 				<div style="width:790px;height:650px;overflow-y:scroll;overflow-x:hidden;">
 				
@@ -128,7 +128,7 @@ let applets = {
 		buttonId:"bonzi_log",
 		open:false,
 		onpress:()=>{
-			if(document.body.innerHTML.includes('id="log_contents">'))return;
+			if(document.body.innerHTML.includes('id="log_contents">'))errs["applet_open"]();
             new Dialog({title:"BonziLOG",width:'275',height:'500',html:`
 			<div style="width:100%;height:100%;overflow-x:hidden;overflow-y:none;" id="log_contents">
 				${logtxt}
@@ -883,7 +883,7 @@ function login(){
     }},
 	{id: "#bonzivm_start", func: () => {
       window.bonziVMsrc="none";
-		if(document.body.innerHTML.includes('id="bonzivmcontainer">'))return;
+		if(document.body.innerHTML.includes('id="bonzivmcontainer">'))errs["applet_open"]();
 			let newWidth = 800;
 			let newHeight = 600;
 			if(isMobile()){newWidth=300; newHeight=650;};
@@ -927,7 +927,7 @@ function login(){
 	{
 		id:'#musicplayer_start',
 		func:()=>{
-			if(document.body.innerHTML.includes('id="musicname">'))return;
+			if(document.body.innerHTML.includes('id="musicname">'))errs["applet_open"]();
 			new Dialog({title:"Music Player",width:'360',height:'380',html:`
 			    <div style="width:100%;height:100%;overflow:hidden;padding:0;background: rgb(31 65 98);color: white;">
 				
