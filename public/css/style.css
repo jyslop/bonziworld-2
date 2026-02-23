@@ -232,15 +232,15 @@ background-image: url(/img/bonzi/bubble_point.png)
     font-style: italic;
     font-weight: bold;
     letter-spacing: 2px;
-	user-select:none;
+    user-select: none;
     font-size: 16px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
     padding-left: 68px;
     padding-top: 7px;
     margin-left: -100px;
-    position: relative;
-    left: 135px;
-    z-index: -1;
+    position: absolute;
+    left: 120px;
+    z-index: 0;
 }
 #chat_start:hover {
     background-position: 0px -31px;
@@ -268,19 +268,22 @@ background-image: url(/img/bonzi/bubble_point.png)
   }
 
 #chat_send {
-    width: 100px;
+    width: 82px;
     height: 29px;
     background-image: url("../img/desktop/start.png");
-    background-size: 102% 315%;
+    background-size: 82px 91px;
     background-repeat: no-repeat;
     box-sizing: border-box;
     color: #fff;
+    position: absolute;
     font-style: italic;
     font-weight: bold;
     letter-spacing: 2px;
     font-size: 16px;
     user-select: none;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
+    z-index: 12;
+    left: 0px;
 }
 #chat_send:hover {
     background-position: 0px -31px;
@@ -295,13 +298,17 @@ background-image: url(/img/bonzi/bubble_point.png)
 }
 
 
-  #chat_message_cont {
-    width: 96%;
+ #chat_message_cont {
+    width: 90%;
+    height: 30px;
     position: relative;
-    top: 4px;
+    /* top: 4px; */
     left: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: -1;
 }
-
   #room_info {
   color: rgba(255, 255, 255, 0.5);
   font-weight: normal;
@@ -623,4 +630,14 @@ button:active {
 .mediacontrol {
 	background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(169, 190, 240, 1) 30%, rgba(115, 145, 217, 1) 50%, rgba(188, 199, 224, 1) 51%, rgba(255, 255, 255, 1) 97%);
     border-radius: 30px;
+}
+.bonzi_tag {
+	display: inline;font-size: 10px;background: rgb(255, 240, 0);color: rgb(0,0,0);text-shadow:2px 2px 2px rgba(0,0,0,0.3); border-radius: 3px;padding: 4px 4px;margin-right: 3px;position: relative;top: -2px;
+    width: 16px;
+    height: 24px;
+    position: relative;
+    top: 0px;
+}
+.tagicon{
+	width:16px;height:16px;position:relative;top:2px;
 }
