@@ -162,6 +162,14 @@ let config = {
 				thisSocket.user = updateUser(thisSocket.user,{hats:currentHats},true);
 				return thisSocket.user;
 			}
+		},
+		"image":(thisSocket,eventData)=>{
+			if(typeof eventData == "string"){
+				if(!config.imageWhitelist.some(r => eventData.startsWith(r)))return;
+				
+				let imgSend = blankify(eventData);
+				eventRoom('talk',{msg:'<img src="'+imgSend+'" width="200" height="auto">'},thisSocket.user,true);
+			}
 		}
 	}
 };
