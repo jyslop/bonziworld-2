@@ -94,7 +94,7 @@ let applets = {
 				<hr>
 				Hats:<br>
 				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
-				<button onclick="socket.emit('command',{type:'hat',param:'clear'});" style="margin-top:6px;">Clear Hats</button>
+				<button onclick="socket.emit('command',{type:'hat',param:''});" style="margin-top:6px;">Clear Hats</button>
 				
 				</div>
 			`});
