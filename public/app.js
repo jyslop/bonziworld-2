@@ -406,6 +406,11 @@ function bonzi(colorurl,left,top,property){
     }
   }
 
+  var drawHatImg = (hatCtx, hatImg) => {
+    hatCtx.clearRect(0, 0, 200, 160);
+    hatCtx.drawImage(hatImg, 0, 0, hatImg.naturalWidth, hatImg.naturalHeight, 0, 0, 200, 160);
+  };
+
   var drawHats = () => {
     for(let layerIdx = 0; layerIdx < 5; layerIdx++){
       let hatCanvas = document.getElementById('hat'+(layerIdx+1)+'_'+localId);
@@ -417,12 +422,12 @@ function bonzi(colorurl,left,top,property){
         let hatSrc = hatList[hatName];
         if(!hatSrc)continue;
         if(hatImgCache[hatName]){
-          hatCtx.drawImage(hatImgCache[hatName], 0, 0, 200, 160);
+          drawHatImg(hatCtx, hatImgCache[hatName]);
         } else {
           let hatImg = new Image();
           hatImg.onload = () => {
             hatImgCache[hatName] = hatImg;
-            hatCtx.drawImage(hatImg, 0, 0, 200, 160);
+            drawHatImg(hatCtx, hatImg);
           };
           hatImg.src = hatSrc;
         }
