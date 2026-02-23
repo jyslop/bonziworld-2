@@ -93,7 +93,7 @@ let applets = {
 				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value});">Set Name</button>
 				<hr>
 				Hats:<br>
-				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;width:400px;"></div>
 				<button onclick="socket.emit('command',{type:'hat',param:''});" style="margin-top:6px;">Clear Hats</button>
 				
 				</div>
@@ -111,7 +111,7 @@ let applets = {
 			}
 			let hatGrid = document.getElementById('hat_grid');
 			Object.keys(hatList).forEach(hatName => {
-				console.log(hatName);
+				
 				hatGrid.insertAdjacentHTML('beforeend',`
 					<button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'});" style="display:flex;flex-direction:column;align-items:center;width:70px;font-size:10px;padding:3px;">
 						<img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">
