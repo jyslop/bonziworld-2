@@ -44,13 +44,32 @@ var logtxt = `
 	<hr>
 `;
 
+var hatList = {
+  "wizard": "./img/bonzi/hats/wizard.png",
+  "windows": "./img/bonzi/hats/windows.png",
+  "truck": "./img/bonzi/hats/truck.png",
+  "rainbow": "./img/bonzi/hats/rainbow.png",
+  "premium": "./img/bonzi/hats/premium.png",
+  "pirate": "./img/bonzi/hats/pirate.png",
+  "peedy": "./img/bonzi/hats/peedy.png",
+  "ninja": "./img/bonzi/hats/ninja.png",
+  "joel": "./img/bonzi/hats/joel.png",
+  "hat": "./img/bonzi/hats/hat.png",
+  "crown": "./img/bonzi/hats/crown.png",
+  "cowboy": "./img/bonzi/hats/cowboy.png",
+  "clippy": "./img/bonzi/hats/clippy.png",
+  "chef": "./img/bonzi/hats/chef.png",
+  "blunt": "./img/bonzi/hats/blunt.png",
+  "astronaut": "./img/bonzi/hats/astronaut.png"
+};
+
 let applets = {
 	"settings":{
 		buttonId:"my_bonzi",
 		open:false,
 		onpress:()=>{
-            new Dialog({title:"Settings",width:'400',height:'480',html:`
-				<div style="width:790px;height:590px;overflow-y:scroll;overflow-x:hidden;">
+            new Dialog({title:"Settings",width:'400',height:'560',html:`
+				<div style="width:790px;height:650px;overflow-y:scroll;overflow-x:hidden;">
 				
 				Color:<br>
 				<div id="row_color1" style="display:flex;flex-direction:row;">
@@ -72,6 +91,10 @@ let applets = {
 				<hr>
 				Name:<br>
 				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value});">Set Name</button>
+				<hr>
+				Hats:<br>
+				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+				<button onclick="socket.emit('command',{type:'hat',param:'clear'});" style="margin-top:6px;">Clear Hats</button>
 				
 				</div>
 			`});
@@ -86,6 +109,15 @@ let applets = {
 					</button>
 				`);
 			}
+			let hatGrid = document.getElementById('hat_grid');
+			Object.keys(hatList).forEach(hatName => {
+				hatGrid.insertAdjacentHTML('beforeend',`
+					<button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'});" style="display:flex;flex-direction:column;align-items:center;width:70px;font-size:10px;padding:3px;">
+						<img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">
+						${hatName}
+					</button>
+				`);
+			});
 		},
 	},
 	"bonzilog":{
@@ -169,7 +201,6 @@ $(window).load(function(){
   document.addEventListener("touchcancel", touchHandler, true);    
   if(isMobile()){
     $("#room_info").hide();
-   // $("#page_mobile").show();
   }
   $("#login_card").show();
   $("#login_load").hide();
@@ -355,11 +386,14 @@ function bonzi(colorurl,left,top,property){
 	  if(property.tag.length < 1)tagHtml=``;
   }
   content.insertAdjacentHTML('beforeend',`
-  <div id='name_${localId}' style='position:absolute;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};' id='${localId}'></canvas><div id='chat_${localId}' class='bubble_chat'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point'></div>
+  <div id='name_${localId}' style='position:absolute;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};' id='${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat1_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat2_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat3_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat4_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat5_${localId}'></canvas><div id='chat_${localId}' class='bubble_chat'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point'></div>
   `);
   $("#chat_"+localId).hide();
   $("#point_" + localId).hide();
-  
+
+  var currentHats = property.hats || [];
+  var hatImgCache = {};
+
   var canvas = document.getElementById(localId);
   var ctx = canvas.getContext('2d');
   var img = new Image();
@@ -371,6 +405,31 @@ function bonzi(colorurl,left,top,property){
       ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
     }
   }
+
+  var drawHats = () => {
+    for(let layerIdx = 0; layerIdx < 5; layerIdx++){
+      let hatCanvas = document.getElementById('hat'+(layerIdx+1)+'_'+localId);
+      if(!hatCanvas)continue;
+      let hatCtx = hatCanvas.getContext('2d');
+      hatCtx.clearRect(0, 0, 200, 160);
+      if(layerIdx < currentHats.length){
+        let hatName = currentHats[layerIdx];
+        let hatSrc = hatList[hatName];
+        if(!hatSrc)continue;
+        if(hatImgCache[hatName]){
+          hatCtx.drawImage(hatImgCache[hatName], 0, 0, 200, 160);
+        } else {
+          let hatImg = new Image();
+          hatImg.onload = () => {
+            hatImgCache[hatName] = hatImg;
+            hatCtx.drawImage(hatImg, 0, 0, 200, 160);
+          };
+          hatImg.src = hatSrc;
+        }
+      }
+    }
+  };
+
   var animate = (properties) => {
     if(isStaticImage){
       draw(0,0);
@@ -443,6 +502,13 @@ function bonzi(colorurl,left,top,property){
     document.getElementById("point_"+localId).style.left = pointx + "px";
     canvas.style.left = xInt + "px";
     canvas.style.top = yInt + "px";
+    for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
+      let hatCanvas = document.getElementById('hat'+layerIdx+'_'+localId);
+      if(hatCanvas){
+        hatCanvas.style.left = xInt + "px";
+        hatCanvas.style.top = yInt + "px";
+      }
+    }
   }
   var talk = (properties) => {
 	 
@@ -497,6 +563,10 @@ function bonzi(colorurl,left,top,property){
     img.src = properties.color;
     draw(0,0);
     animate({type: "idle"});
+    if(Array.isArray(properties.hats)){
+      currentHats = properties.hats;
+      drawHats();
+    }
   }
   var joke = (queue) => {
     var jokeopen = [
@@ -513,6 +583,10 @@ function bonzi(colorurl,left,top,property){
    	document.getElementById("name_" + localId).remove();
     document.getElementById("chat_" + localId).remove();
     document.getElementById("point_" + localId).remove();
+    for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
+      let hatCanvas = document.getElementById('hat'+layerIdx+'_'+localId);
+      if(hatCanvas)hatCanvas.remove();
+    }
 	  
 	  bonzislist.splice(screenbonzis({id:localId}).queue,1);
 	  bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
@@ -544,10 +618,13 @@ function bonzi(colorurl,left,top,property){
       isStaticImage = true;
     }
     draw(0,0);
+    drawHats();
     var yInt = parseInt(document.getElementById(localId).style.top);
     var xInt = parseInt(document.getElementById(localId).style.left);
     move({x: xInt, y: yInt})
   }
+  drawHats();
+
   var mousestat = "up";
 
   var touchDragActive = false;
@@ -713,7 +790,7 @@ function resetUsers(userlist) {
     
     userAmt = userlist.length;
     for (i = 0; i < userAmt; i++) {
-        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||""});
+        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||"", hats: userlist[i].hats||[]});
         newuser.queue = bonzislist.length;
         bonzislist.push(newuser);
     }
@@ -905,7 +982,7 @@ function login(){
   });
   socket.on("newuser", (data) => {
 	document.getElementById('users_online').innerText = parseInt(document.getElementById('users_online').innerText)+1;
-    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||""});
+    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||"", hats: data.hats||[]});
 	newuser.queue = bonzislist.length;
     bonzislist.push(newuser);
   });
@@ -930,7 +1007,7 @@ function login(){
     var n = data.name;
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
-    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||""});
+    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[]});
   });
 socket.on("err",(errorTxt)=>alert(errorTxt));
   socket.on("nuke",()=>{
