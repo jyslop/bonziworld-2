@@ -156,6 +156,24 @@ var colorList = {
   "bcn":"/img/bonzi/bcn.png",
   "smile":"/img/bonzi/smile.png",
 };
+let hatList = {
+  "wizard": "./img/bonzi/hats/wizard.png",
+  "windows": "./img/bonzi/hats/windows.png",
+  "truck": "./img/bonzi/hats/truck.png",
+  "rainbow": "./img/bonzi/hats/rainbow.png",
+  "premium": "./img/bonzi/hats/premium.png",
+  "pirate": "./img/bonzi/hats/pirate.png",
+  "peedy": "./img/bonzi/hats/peedy.png",
+  "ninja": "./img/bonzi/hats/ninja.png",
+  "joel": "./img/bonzi/hats/joel.png",
+  "hat": "./img/bonzi/hats/hat.png",
+  "crown": "./img/bonzi/hats/crown.png",
+  "cowboy": "./img/bonzi/hats/cowboy.png",
+  "clippy": "./img/bonzi/hats/clippy.png",
+  "chef": "./img/bonzi/hats/chef.png",
+  "blunt": "./img/bonzi/hats/blunt.png",
+  "astronaut": "./img/bonzi/hats/astronaut.png"
+};
 let colorNames = Object.keys(colorList);
 var botmsg = [
 "- hi",'- bundasworld revive HD deluxe ++'];
