@@ -924,6 +924,17 @@ function login(){
 </div>
 `});
     }},
+    {
+		id:'#notepad_start',
+		func:()=>{
+			if(document.body.innerHTML.includes('id="notepad">')){errs["applet_open"](); return;}
+			new Dialog({title:"Notepad",width:'400',height:'300px',html:`
+        <div>
+        <textarea id="notepad" style="width:100%;height:300px;"></textarea>
+      `});
+			
+		}
+	},
 	{
 		id:'#musicplayer_start',
 		func:()=>{
