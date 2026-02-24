@@ -56,7 +56,7 @@ let config = {
 		idLength:50,
 		nameLength:30
 	},
-	imageWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co'],
+	imageWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
 	commands:{
 		"color":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
