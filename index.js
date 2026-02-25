@@ -56,12 +56,14 @@ let config = {
 		idLength:50,
 		nameLength:30
 	},
-	imageWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
+    mediaWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
+	videoFormats:['.mp4','.mov'],
+	imageFormats:['.webp','.png','.jpeg','.jpg','.gif','.bmp','.ico'],
 	commands:{
 		"color":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
 				
-				if(!config.imageWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
 				if(colorNames.includes(eventData) && eventData !== "pope")eventData=colorList[eventData];
 				let roomUsers = getUsers(thisSocket.user.roomId);
 				let publicUser = getUsers(thisSocket.user.roomId)[thisSocket.user.roomIndex];
@@ -166,10 +168,20 @@ let config = {
 		},
 		"image":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
-				if(!config.imageWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.imageFormats.some(r => eventData.endsWith(r)))return;
 				
 				let imgSend = blankify(eventData);
-				eventRoom('talk',{msg:'<img src="'+imgSend+'" width="200" height="auto">'},thisSocket.user,true);
+				eventRoom('msg',{msg:'- <img class="user_img" src="'+imgSend+'">',id:thisSocket.user.id},thisSocket.user,true);
+			}
+		},
+		"video":(thisSocket,eventData)=>{
+			if(typeof eventData == "string"){
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.videoFormats.some(r => eventData.endsWith(r)))return;
+				
+				let videoSend = blankify(eventData);
+				eventRoom('msg',{msg:'- <video class="user_vid" controls><source src="'+videoSend+'" type="video/mp4"></video>',id:thisSocket.user.id},thisSocket.user,true);
 			}
 		}
 	}
