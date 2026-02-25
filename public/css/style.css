@@ -641,3 +641,11 @@ button:active {
 .tagicon{
 	width:16px;height:16px;position:relative;top:2px;
 }
+.user_img {
+	width:160px;
+	height:auto;
+}
+.user_vid {
+	width:190px;
+	height:auto;
+}
