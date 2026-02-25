@@ -852,6 +852,23 @@ let musicList = [];
 						});
 						
 					};
+socket.on("err",(errorTxt)=>alert(errorTxt));
+ socket.on("disconnect", () => {
+	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
+    new Dialog({title:'Error',html:`
+		<img src="./img/error/logo.png"><br>
+		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
+		<br>
+        Nah, but seriously there was an error and you got disconnected from the server. 
+		Chances are, your internet just died out for a brief moment or your device went to sleep. 
+		Otherwise the server just screwed up.<br>
+        <br>
+        Try and reload the page. If that doesn't work and your internet is okay, then panic. 
+		We'll probably be back up Soon™ though.<br>
+        <br>
+        <a href="#" onclick="window.location.reload()">Reload?</a><br>
+	`})
+  });
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -1033,7 +1050,6 @@ function login(){
     if(typeof data.level == "number")myLevel = data.level;
     screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[]});
   });
-socket.on("err",(errorTxt)=>alert(errorTxt));
   socket.on("nuke",()=>{
     document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
     socket.disconnect();
