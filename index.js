@@ -334,6 +334,7 @@ io.on("connection", function(socket){
 	socket.on("login", (data) => {
 		if(isFucked(socket.user.ip)){
 			socket.emit("err","No proxies allowed right now");
+			return;
 		}
 		else {
 		
