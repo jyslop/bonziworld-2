@@ -12,7 +12,39 @@ function setCookie(cname,cvalue,exdays) {
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-
+class Notify {
+    constructor(properties={title:"Alert",icon:"./img/desktop/infobubble.png",body:"Empty",parent:'info_icon'}){
+        properties.title = properties.title || "Alert";
+        properties.icon = properties.icon || "./img/desktop/infobubble.png";
+        properties.body = properties.body || "Empty";
+        properties.parent = properties.parent || 'info_icon';
+        this.properties = properties;
+        this.id = Id(5);
+        let r = document.getElementById(properties.parent).getBoundingClientRect();
+        let w = 350; let h = 100;
+        let x = r.x-w;
+        let y = r.y-h;
+        document.getElementById('content').insertAdjacentHTML('beforeend',`
+            <div class="bubble_chat" style="left:${x}px;top:${y}px;width:350px;height:100px;padding:0px 0px;max-width:400px;max-height:100px;z-index:9999;" id="${this.id}">
+                <div style="padding:0px;height:10px;margin-top:-10px;"><img src="${properties.icon}" width="14" height="14"> &nbsp; <b>${properties.title}</b> <button style="width:20px;height:20px;float:right;" onclick="document.getElementById('${this.id}').remove();document.getElementById('icon_toggle_btn').style.visibility = 'visible';">X</button></div>
+            <div style="height:max-content;font-family:'WinXP';font-size:16px;">${properties.body}</div>
+        </div>
+        `);
+        let nopelie = () => {
+           if(document.getElementById(this.id) !== null){
+               r = document.getElementById(properties.parent).getBoundingClientRect();
+               x = r.x-w;
+               y = r.y-h;
+               document.getElementById(this.id).style.left = x+"px";
+               document.getElementById(this.id).style.top = y+"px";
+           } 
+        };
+        window.onresize = () => {nopelie();};
+        document.onresize = () => {nopelie();};
+        document.getElementById('icon_toggle_btn').style.visibility = 'hidden';
+        setTimeout(() => {if(document.getElementById(this.id) != null)document.getElementById('icon_toggle_btn').style.visibility = 'visible';},8000);
+    }
+};
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -980,6 +1012,12 @@ function login(){
 			
 		}
 	},
+	{id: '#info_icon',func:()=>{
+		new Notify({
+			title:'Welcome',
+			body:'This is a beta/prototype of BonziWORLD XP, the next generation of BonziWORLD. Please note there may be glaring bugs or issues as this server was made from scratch in like 2 nights.',
+			parent:'info_icon'});
+	}},
 	{
 		id:'#musicplayer_start',
 		func:()=>{
