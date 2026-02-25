@@ -124,6 +124,33 @@ let applets = {
 			});
 		},
 	},
+	"mediaupload":{
+	buttonId:"media_upload",
+	open:false,
+	onpress:()=>{
+		if(document.body.innerHTML.includes('id="media_upload_input"')){errs["applet_open"](); return;}
+		new Dialog({title:"Images And Videos",width:'320',height:'200',html:`
+			<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+				<input type="file" accept="image/*,video/*" id="media_upload_input" style="display:none;">
+				<button onclick="document.getElementById('media_upload_input').click();" style="width:120px;height:120px;font-size:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+				<p style="font-size:12px;text-align:center;">Click to upload an image or video to Catbox</p>
+			</div>
+		`});
+		document.getElementById('media_upload_input').onchange = (e) => {
+			let file = e.target.files[0];
+			if(!file)return;
+			let isVideo = file.type.startsWith('video/');
+			let formData = new FormData();
+			formData.append('reqtype','fileupload');
+			formData.append('fileToUpload',file);
+			fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData}).then(r=>r.text()).then(url=>{
+				url = url.trim();
+				if(isVideo){socket.emit('command',{type:'vid',param:url});}
+				else{socket.emit('command',{type:'img',param:url});}
+			});
+		};
+	},
+	},
 	"bonzilog":{
 		buttonId:"bonzi_log",
 		open:false,
