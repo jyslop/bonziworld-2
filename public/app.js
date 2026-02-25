@@ -752,10 +752,11 @@ function updateUsers(){
   $("#users_online").html(userAmt);
 }
 function urlify(text) {
+	if(text.includes('<img class="user_img"') || text.includes('<video class="user_vid"'))return text;
   var urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlRegex, function(url) {
     return '<a href="'+url+'">'+url+'</a>';
-  })
+  });
 }
 function txtDuration(txt){
 	var wordsPerMinute = 80;
