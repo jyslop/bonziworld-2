@@ -2,16 +2,26 @@ var express = require('express')
 var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
-var cors = require('cors')
+var cors = require('cors');
+var fs = require('fs');
 
+let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8');
+/*
 let proxyASNs = [9009, 20473, 14618]; 
-let { lookup } = require('geoip-lite'); 
+let { lookup } = require('geoip-lite'); */
+
 
 function isFucked(ip) {
-	console.log(ip);
-    let geo = lookup(ip);
-	console.log(geo);
-    return geo && proxyASNs.includes(geo.asnum);
+	let result = false;
+	if(ip.includes(',')){
+		ip = ip.split(',');
+		ip.forEach(ipv4value => {
+			if(proxiesIPV4.includes(ipv4value))result=true;
+		});
+	} else {
+		if(proxiesIPV4.includes(ipv4value))result=true;
+	}
+    return result;
 }
 
 app.use(cors());
