@@ -2,16 +2,26 @@ var express = require('express')
 var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
-var cors = require('cors')
+var cors = require('cors');
+var fs = require('fs');
 
+let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8');
+/*
 let proxyASNs = [9009, 20473, 14618]; 
-let { lookup } = require('geoip-lite'); 
+let { lookup } = require('geoip-lite'); */
+
 
 function isFucked(ip) {
-	console.log(ip);
-    let geo = lookup(ip);
-	console.log(geo);
-    return geo && proxyASNs.includes(geo.asnum);
+	let result = false;
+	if(ip.includes(',')){
+		ip = ip.split(',');
+		ip.forEach(ipv4value => {
+			if(proxiesIPV4.includes(ipv4value))result=true;
+		});
+	} else {
+		if(proxiesIPV4.includes(ipv4value))result=true;
+	}
+    return result;
 }
 
 app.use(cors());
@@ -56,12 +66,14 @@ let config = {
 		idLength:50,
 		nameLength:30
 	},
-	imageWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co'],
+    mediaWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
+	videoFormats:['.mp4','.mov'],
+	imageFormats:['.webp','.png','.jpeg','.jpg','.gif','.bmp','.ico'],
 	commands:{
 		"color":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
 				
-				if(!config.imageWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
 				if(colorNames.includes(eventData) && eventData !== "pope")eventData=colorList[eventData];
 				let roomUsers = getUsers(thisSocket.user.roomId);
 				let publicUser = getUsers(thisSocket.user.roomId)[thisSocket.user.roomIndex];
@@ -166,10 +178,20 @@ let config = {
 		},
 		"image":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
-				if(!config.imageWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.imageFormats.some(r => eventData.endsWith(r)))return;
 				
 				let imgSend = blankify(eventData);
-				eventRoom('talk',{msg:'<img src="'+imgSend+'" width="200" height="auto">'},thisSocket.user,true);
+				eventRoom('msg',{msg:'- <img class="user_img" src="'+imgSend+'">',id:thisSocket.user.id},thisSocket.user,true);
+			}
+		},
+		"video":(thisSocket,eventData)=>{
+			if(typeof eventData == "string"){
+				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
+				if(!config.videoFormats.some(r => eventData.endsWith(r)))return;
+				
+				let videoSend = blankify(eventData);
+				eventRoom('msg',{msg:'- <video class="user_vid" controls><source src="'+videoSend+'" type="video/mp4"></video>',id:thisSocket.user.id},thisSocket.user,true);
 			}
 		}
 	}
@@ -312,6 +334,7 @@ io.on("connection", function(socket){
 	socket.on("login", (data) => {
 		if(isFucked(socket.user.ip)){
 			socket.emit("err","No proxies allowed right now");
+			return;
 		}
 		else {
 		

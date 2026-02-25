@@ -12,7 +12,39 @@ function setCookie(cname,cvalue,exdays) {
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-
+class Notify {
+    constructor(properties={title:"Alert",icon:"./img/desktop/infobubble.png",body:"Empty",parent:'info_icon'}){
+        properties.title = properties.title || "Alert";
+        properties.icon = properties.icon || "./img/desktop/infobubble.png";
+        properties.body = properties.body || "Empty";
+        properties.parent = properties.parent || 'info_icon';
+        this.properties = properties;
+        this.id = Id(5);
+        let r = document.getElementById(properties.parent).getBoundingClientRect();
+        let w = 350; let h = 100;
+        let x = r.x-w;
+        let y = r.y-h;
+        document.getElementById('content').insertAdjacentHTML('beforeend',`
+            <div class="bubble_chat" style="left:${x}px;top:${y}px;width:350px;height:100px;padding:0px 0px;max-width:400px;max-height:100px;z-index:9999;" id="${this.id}">
+                <div style="padding:0px;height:10px;margin-top:-10px;"><img src="${properties.icon}" width="14" height="14"> &nbsp; <b>${properties.title}</b> <button style="width:20px;height:20px;float:right;" onclick="document.getElementById('${this.id}').remove();document.getElementById('icon_toggle_btn').style.visibility = 'visible';">X</button></div>
+            <div style="height:max-content;font-family:'WinXP';font-size:16px;">${properties.body}</div>
+        </div>
+        `);
+        let nopelie = () => {
+           if(document.getElementById(this.id) !== null){
+               r = document.getElementById(properties.parent).getBoundingClientRect();
+               x = r.x-w;
+               y = r.y-h;
+               document.getElementById(this.id).style.left = x+"px";
+               document.getElementById(this.id).style.top = y+"px";
+           } 
+        };
+        window.onresize = () => {nopelie();};
+        document.onresize = () => {nopelie();};
+        document.getElementById('icon_toggle_btn').style.visibility = 'hidden';
+        setTimeout(() => {if(document.getElementById(this.id) != null)document.getElementById('icon_toggle_btn').style.visibility = 'visible';},8000);
+    }
+};
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -123,6 +155,33 @@ let applets = {
 				`);
 			});
 		},
+	},
+	"mediaupload":{
+	buttonId:"media_upload",
+	open:false,
+	onpress:()=>{
+		if(document.body.innerHTML.includes('id="media_upload_input"')){errs["applet_open"](); return;}
+		new Dialog({title:"Images And Videos",width:'320',height:'200',html:`
+			<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+				<input type="file" accept="image/*,video/*" id="media_upload_input" style="display:none;">
+				<button onclick="document.getElementById('media_upload_input').click();" style="width:120px;height:120px;font-size:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+				<p style="font-size:12px;text-align:center;">Click to upload an image or video to Catbox</p>
+			</div>
+		`});
+		document.getElementById('media_upload_input').onchange = (e) => {
+			let file = e.target.files[0];
+			if(!file)return;
+			let isVideo = file.type.startsWith('video/');
+			let formData = new FormData();
+			formData.append('reqtype','fileupload');
+			formData.append('fileToUpload',file);
+			fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData}).then(r=>r.text()).then(url=>{
+				url = url.trim();
+				if(isVideo){socket.emit('command',{type:'vid',param:url});}
+				else{socket.emit('command',{type:'img',param:url});}
+			});
+		};
+	},
 	},
 	"bonzilog":{
 		buttonId:"bonzi_log",
@@ -752,10 +811,11 @@ function updateUsers(){
   $("#users_online").html(userAmt);
 }
 function urlify(text) {
+	if(text.includes('<img class="user_img"') || text.includes('<video class="user_vid"'))return text;
   var urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlRegex, function(url) {
     return '<a href="'+url+'">'+url+'</a>';
-  })
+  });
 }
 function txtDuration(txt){
 	var wordsPerMinute = 80;
@@ -851,6 +911,23 @@ let musicList = [];
 						});
 						
 					};
+socket.on("err",(errorTxt)=>alert(errorTxt));
+ socket.on("disconnect", () => {
+	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
+    new Dialog({title:'Error',html:`
+		<img src="./img/error/logo.png"><br>
+		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
+		<br>
+        Nah, but seriously there was an error and you got disconnected from the server. 
+		Chances are, your internet just died out for a brief moment or your device went to sleep. 
+		Otherwise the server just screwed up.<br>
+        <br>
+        Try and reload the page. If that doesn't work and your internet is okay, then panic. 
+		We'll probably be back up Soon™ though.<br>
+        <br>
+        <a href="#" onclick="window.location.reload()">Reload?</a><br>
+	`})
+  });
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -927,14 +1004,20 @@ function login(){
     {
 		id:'#notepad_start',
 		func:()=>{
-			if(document.body.innerHTML.includes('id="notepad">')){errs["applet_open"](); return;}
+			if(document.body.innerHTML.includes('id="notepad"')){errs["applet_open"](); return;}
 			new Dialog({title:"Notepad",width:'400',height:'300px',html:`
-        <div>
-        <textarea id="notepad" style="width:100%;height:300px;"></textarea>
-      `});
+        		<textarea id="notepad" style="width:100%;height:300px;"></textarea>
+				<button onclick="eval(document.getElementById('notepad').value)">Run</button>
+      		`});
 			
 		}
 	},
+	{id: '#info_icon',func:()=>{
+		new Notify({
+			title:'Welcome',
+			body:'This is a beta/prototype of BonziWORLD XP, the next generation of BonziWORLD. Please note there may be glaring bugs or issues as this server was made from scratch in like 2 nights.',
+			parent:'info_icon'});
+	}},
 	{
 		id:'#musicplayer_start',
 		func:()=>{
@@ -1032,7 +1115,6 @@ function login(){
     if(typeof data.level == "number")myLevel = data.level;
     screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[]});
   });
-socket.on("err",(errorTxt)=>alert(errorTxt));
   socket.on("nuke",()=>{
     document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
     socket.disconnect();
