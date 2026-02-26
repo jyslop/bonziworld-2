@@ -685,9 +685,7 @@ function bonzi(colorurl,left,top,property){
   this.update = update;
   this.joke = joke;
 
-  var left = document.getElementById(localId).style.left;
-  var top = document.getElementById(localId).style.top;
-  var pos = {x: left, y: top};
+  var pos = {x: document.getElementById(localId).style.left, y: document.getElementById(localId).style.top};
 
   this.tag = property.tag || "";
   this.name = property.name;
