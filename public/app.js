@@ -525,6 +525,7 @@ function bonzi(colorurl,left,top,property){
   var rows = 21;
   var columns = 17;
   var localId = property.id;
+  this.frameTick = 70;
   this.id = localId;
   this.mute = false;
   var isStaticImage = false;
@@ -725,17 +726,29 @@ function bonzi(colorurl,left,top,property){
     
   }
   this.leave = () => {
-	   document.getElementById(localId).remove();
-   	document.getElementById("name_" + localId).remove();
-    document.getElementById("chat_" + localId).remove();
-    document.getElementById("point_" + localId).remove();
-    for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
-      let hatCanvas = document.getElementById('hat'+layerIdx+'_'+localId);
-      if(hatCanvas)hatCanvas.remove();
-    }
-	  
-	  bonzislist.splice(screenbonzis({id:localId}).queue,1);
-	  bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
+		let leaveFrames = [
+			[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[12,2],[13,2],[14,2],[15,2],[16,2],[17,2],
+			[1,3],[2,3],[3,3],[4,3],[5,3],[6,3],null
+		];
+		leaveFrames.forEach((frameInfo,i) => {
+			setTimeout(() => {
+				if(frameInfo != null){
+					toFrame(...frameInfo);
+				} else {
+					document.getElementById(localId).remove();
+					document.getElementById("name_" + localId).remove();
+					document.getElementById("chat_" + localId).remove();
+					document.getElementById("point_" + localId).remove();
+					for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
+						let hatCanvas = document.getElementById('hat'+layerIdx+'_'+localId);
+						if(hatCanvas)hatCanvas.remove();
+					}
+		
+					bonzislist.splice(screenbonzis({id:localId}).queue,1);
+					bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
+				}
+			},i*this.frameTick);
+		});
   };
   this.toFrame = toFrame;
   this.animate = animate;
@@ -756,7 +769,7 @@ function bonzi(colorurl,left,top,property){
   }
 
   img.src = colorurl;
-  img.onload = function() {
+  img.onload = () => {
     if(img.naturalWidth === 3400 && img.naturalHeight === 3360){
       isStaticImage = false;
     } else {
@@ -766,7 +779,22 @@ function bonzi(colorurl,left,top,property){
     drawHats();
     var yInt = parseInt(document.getElementById(localId).style.top);
     var xInt = parseInt(document.getElementById(localId).style.left);
-    move({x: xInt, y: yInt})
+    move({x: xInt, y: yInt});
+	let joinFrames = [
+		[6,17],[7,17],[8,17],[9,17],[10,17],[11,17],[12,17],[13,17],[14,17],[15,17],[16,17],[17,17],
+		[1,18],[2,18],[3,18],[4,18],[5,18],[6,18],[7,18],[8,18],[9,18],[10,18],[11,18],[12,18],[13,18],[14,18],
+		[1,1],null
+	];
+	let frameTick = this.frameTick;
+	joinFrames.forEach((frameInfo,i) => {
+		setTimeout(() => {
+			if(frameInfo != null){
+				toFrame(...frameInfo);
+			} else {
+				draw(0,0);
+			}
+		},i*frameTick);
+	});
   }
   drawHats();
 
@@ -873,6 +901,7 @@ function bonzi(colorurl,left,top,property){
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
+			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"bass",param:"${toName}"});'>Call a bass</p>
 			<p class="context_text" id="${localId}_mute" onclick='(function(){var b=screenbonzis({id:"${localId}"});if(b){b.mute=!b.mute;document.getElementById("${localId}_mute").innerText=b.mute?"Unmute":"Mute";}})();'>${muteLabel}</p>
 			<div id="ctx_mod_${localId}"></div>
 		</div>`);
@@ -1176,6 +1205,7 @@ function login(){
     bonzislist.push(newuser);
   });
   socket.on("leave", (data) => {
+	  console.log(data);
 	if(typeof screenbonzis({id:data.id}).leave == "function")screenbonzis({id:data.id}).leave();
   });
   socket.on("msg", (data) => {
@@ -1184,12 +1214,17 @@ function login(){
 
 	let newMsg = urlify(data.msg.replaceAll('{NAME}',thisbonzi.name).replaceAll('{COLOR}',thisbonzi.color));
 	
-    newLog({name:thisbonzi.name, msg:newMsg, quote: data.quote || null});
+    if(!thisbonzi.mute)newLog({name:thisbonzi.name, msg:newMsg, quote: data.quote || null});
     thisbonzi.talk({text: newMsg, quote: data.quote || null});
   });
   socket.on("asshole", (data) => {
     let thisbonzi = screenbonzis({id: data.by});
 	let queue = ["Hey, " + data.to + "!","You're a fucking asshole!"];
+    queue.forEach((queueText,i) => { setTimeout(() => { thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
+  });
+  socket.on("bass", (data) => {
+    let thisbonzi = screenbonzis({id: data.by});
+	let queue = ["Hey, " + data.to + "!","You're a fucking bass!"];
     queue.forEach((queueText,i) => { setTimeout(() => { thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
   });
   socket.on("updateUser", (data) => {
