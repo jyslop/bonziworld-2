@@ -830,7 +830,7 @@ function urlify(text) {
 	if(text.includes('<img class="user_img"') || text.includes('<video class="user_vid"'))return text;
   var urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlRegex, function(url) {
-    return '<a href="'+url+'">'+url+'</a>';
+    return '<a href="'+url+'" target="_blank">'+url+'</a>';
   });
 }
 function txtDuration(txt){
