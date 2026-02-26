@@ -707,7 +707,8 @@ function bonzi(colorurl,left,top,property){
     }
     $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + properties.name);
     isStaticImage = false;
-    img.src = properties.color;
+    if(typeof properties.changeColor == "boolean"){if(properties.changeColor)img.src = properties.color;}
+	else {img.src = properties.color}
     draw(0,0);
     animate({type: "idle"});
     if(Array.isArray(properties.hats)){
@@ -1231,7 +1232,7 @@ function login(){
     var n = data.name;
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
-    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[]});
+    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],changeColor:false});
   });
   socket.on("nuke",()=>{
     document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
