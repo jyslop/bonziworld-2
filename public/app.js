@@ -6,6 +6,7 @@ var bonzislist = [];
 var mousex = 0;
 var mousey = 0;
 var myLevel = 1;
+var bonziZCounter = 100;
 function setCookie(cname,cvalue,exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -198,6 +199,23 @@ function clampAllBonzis() {
 	}
 }
 
+function raiseBonzi(localId) {
+	bonziZCounter++;
+	var zBase = bonziZCounter * 5;
+	var canvas = document.getElementById(localId);
+	var nameEl = document.getElementById("name_" + localId);
+	var chatEl = document.getElementById("chat_" + localId);
+	var pointEl = document.getElementById("point_" + localId);
+	if (canvas) canvas.style.zIndex = zBase;
+	if (nameEl) nameEl.style.zIndex = zBase + 1;
+	if (chatEl) chatEl.style.zIndex = zBase + 2;
+	if (pointEl) pointEl.style.zIndex = zBase + 3;
+	for (var li = 1; li <= 5; li++) {
+		var hatCanvas = document.getElementById("hat" + li + "_" + localId);
+		if (hatCanvas) hatCanvas.style.zIndex = zBase;
+	}
+}
+
 $(window).on("resize", function() {
 	clampAllBonzis();
 	var iconBar = document.querySelector(".icon_bar");
@@ -313,7 +331,6 @@ function sendMsg(){
   $("#chat_message").val("")
 }
 
-//shameless skidding from erik because api's are invented by peabrained dickmilkers
 function uploadPopup(initialFile) {
     let blobUrl = null;
     let dialog = new Dialog({
@@ -487,7 +504,7 @@ function bonzi(colorurl,left,top,property){
 	  if(property.tag.length < 1)tagHtml=``;
   }
   content.insertAdjacentHTML('beforeend',`
-  <div id='name_${localId}' style='position:absolute;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};' id='${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat1_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat2_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat3_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat4_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;' id='hat5_${localId}'></canvas><div id='chat_${localId}' class='bubble_chat'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point'></div>
+  <div id='name_${localId}' style='position:absolute;z-index:500;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};z-index:500;' id='${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat1_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat2_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat3_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat4_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat5_${localId}'></canvas><div id='chat_${localId}' class='bubble_chat' style='z-index:502;'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point' style='z-index:503;'></div>
   `);
   $("#chat_"+localId).hide();
   $("#point_" + localId).hide();
@@ -720,6 +737,7 @@ function bonzi(colorurl,left,top,property){
 
   canvas.addEventListener("touchstart", function(e) {
     e.preventDefault();
+    raiseBonzi(localId);
     touchDragActive = true;
     var t = e.touches[0];
     touchStartX = t.clientX;
@@ -771,6 +789,7 @@ function bonzi(colorurl,left,top,property){
     mousey = e.clientY;
   }
   document.getElementById(localId).onmousedown = () => {
+    raiseBonzi(localId);
     mousestat = "down";
     $("body").css({
       "user-select": "none"
