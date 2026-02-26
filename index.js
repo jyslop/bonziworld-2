@@ -389,7 +389,7 @@ io.on("connection", function(socket){
 							if(typeof data.quote.msg == "string" && typeof data.quote.name == "string"){
 								data = {
 									msg:data.msg,
-									quote:{text:blankify(data.quote.msg),name:blankify(data.quote.name)},
+									quote:{msg:blankify(data.quote.msg),name:blankify(data.quote.name)},
 									id:socket.user.id
 								};
 							}
