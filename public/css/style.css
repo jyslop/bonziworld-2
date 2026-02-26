@@ -134,12 +134,14 @@ background-image: url(/img/bonzi/bubble_point.png)
     position: absolute;
     background-color: white;
     width: 160px;
+    border: 2px solid rgb(151 151 151);
+    filter: drop-shadow(2px 2px 5px black);
 	z-index:99999;
 }
 .context_text {
   position: relative;
   left: 10px;
-  min-width:140px;
+  max-width:160px;
 }
 .context_text:hover {
 	background:rgba(80,80,255,0.3);
@@ -649,4 +651,22 @@ button:active {
 .user_vid {
 	width:190px;
 	height:auto;
+}
+.upload_dropzone {
+    border: 1px solid #645436;
+	width:100px;height:100px;font-size:25px;
+    flex: 1;
+	margin-left:calc(50% - 50px);
+    cursor: pointer;
+}
+
+.upload_buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.upload_icon {
+    height: 1rem;
+    vertical-align: bottom;
 }
