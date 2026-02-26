@@ -99,6 +99,12 @@ let config = {
 				eventRoom("asshole",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
 			}
 		},
+		"bass":(thisSocket,eventData)=>{
+			eventData = {to:eventData};
+			if(typeof eventData == "object"){
+				eventRoom("bass",{by:thisSocket.user.id,to:blankify(eventData.to)},thisSocket.user,true);
+			}
+		},
 		"tag":(thisSocket,eventData)=>{
 			if(thisSocket.user.level > 1 && typeof eventData == "string"){
 				eventData = blankify(eventData,32);
@@ -420,8 +426,8 @@ io.on("connection", function(socket){
 				});
 
 				socket.on("disconnect", () => {
+					eventRoom('leave',{id:socket.user.id},socket.user,true);
 					publicrooms[socket.user.roomId].users.splice(socket.user.roomIndex,1);
-					eventRoom('leave',{id:socket.user.id},socket.user);
 					if(typeof skiddieWatch[socket.user.ip] == "object"){
 						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn)skiddieWatch[socket.user.ip].instances--;
 						
