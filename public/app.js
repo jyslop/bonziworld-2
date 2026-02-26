@@ -7,6 +7,8 @@ var mousex = 0;
 var mousey = 0;
 var myLevel = 1;
 var bonziZCounter = 100;
+var replyTarget = null;
+
 function setCookie(cname,cvalue,exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -297,12 +299,36 @@ function Id(length) {
 }
 function clearLog(){
 	logtxt=`<i>Log reset.</i><hr>`;
-	document.getElementById('log_contents').innerHTML = logtxt;
+	if(document.getElementById('log_contents') !== null)document.getElementById('log_contents').innerHTML = logtxt;
+}
+function setReplyTarget(name, msg) {
+	replyTarget = {name: name, msg: msg};
+	var indicator = document.getElementById('reply_indicator');
+	if(!indicator){
+		var cont = document.getElementById('chat_message_cont');
+		var ind = document.createElement('div');
+		ind.id = 'reply_indicator';
+		ind.style.cssText = 'position:absolute;top:-22px;left:60px;background:rgba(0,0,60,0.75);color:#adf;font-family:WinXP,Tahoma,sans-serif;font-size:12px;padding:2px 6px;border-radius:3px 3px 0 0;white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;';
+		ind.innerHTML = '&#x21A9; replying to <b>' + name + '</b><span onclick="clearReplyTarget();" style="cursor:pointer;margin-left:4px;color:#f88;">&#x2715;</span>';
+		document.getElementById('chat_bar').appendChild(ind);
+	} else {
+		indicator.innerHTML = '&#x21A9; replying to <b>' + name + '</b><span onclick="clearReplyTarget();" style="cursor:pointer;margin-left:4px;color:#f88;">&#x2715;</span>';
+	}
+}
+function clearReplyTarget() {
+	replyTarget = null;
+	var indicator = document.getElementById('reply_indicator');
+	if(indicator) indicator.remove();
 }
 function newLog(options){
-	logtxt+=`
-		<b>${options.name}:</b>${options.msg}<hr>
-	`;
+	var replyHtml = '';
+	if(options.quote && options.quote.name && options.quote.msg){
+		replyHtml = '<div style="border-left:3px solid #888;padding:2px 6px;margin-bottom:4px;background:rgba(0,0,0,0.07);font-size:12px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;"><b>' + options.quote.name + ':</b> ' + options.quote.msg + '</div>';
+	}
+	var msgId = 'logmsg_' + Id(8);
+	var escapedName = options.name.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+	var escapedMsg = options.msg.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+	logtxt += '<div style="position:relative;padding-right:28px;">' + replyHtml + '<b>' + options.name + ':</b>' + options.msg + '<button onclick="setReplyTarget(\'' + escapedName + '\',\'' + escapedMsg + '\');" style="position:absolute;top:0;right:0;width:22px;height:22px;padding:0;font-size:11px;line-height:1;" title="Reply">&#x21A9;</button></div><hr>';
 	if(document.getElementById('log_contents') !== null)document.getElementById('log_contents').innerHTML = logtxt;
 }
 function touchHandler(event){
@@ -321,14 +347,25 @@ function sendMsg(){
   var msg = $("#chat_message").val();
 
   if(msg.startsWith("/")){
-    var cmdtype = msg.substring(1, msg.indexOf(" "));
-    var param = msg.substring(msg.indexOf(" ") + 1, msg.length);
+    var cmdtype = msg.substring(1, msg.indexOf(" ") === -1 ? msg.length : msg.indexOf(" "));
+    var param = msg.indexOf(" ") === -1 ? "" : msg.substring(msg.indexOf(" ") + 1, msg.length);
 
-    socket.emit("command",{type: cmdtype, param: param})
+    if(cmdtype === "clear"){
+      clearLog();
+      $("#chat_message").val("");
+      return;
+    }
+
+    socket.emit("command",{type: cmdtype, param: param});
   } else {
-    socket.emit("msg",{msg: msg});
+    if(replyTarget){
+      socket.emit("msg",{msg: msg, quote: {msg: replyTarget.msg, name: replyTarget.name}});
+      clearReplyTarget();
+    } else {
+      socket.emit("msg",{msg: msg});
+    }
   }
-  $("#chat_message").val("")
+  $("#chat_message").val("");
 }
 
 function uploadPopup(initialFile) {
@@ -620,7 +657,13 @@ function bonzi(colorurl,left,top,property){
     }
     $("#chat_" + localId).show();
     $("#point_" + localId).show();
-    $("#chat_" + localId).html(properties.text);
+
+    var chatContent = '';
+    if(properties.quote && properties.quote.name && properties.quote.msg){
+      chatContent += '<div style="border-left:3px solid #888;padding:2px 5px;margin-bottom:4px;background:rgba(0,0,0,0.07);font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;"><b>' + properties.quote.name + ':</b> ' + properties.quote.msg + '</div>';
+    }
+    chatContent += properties.text;
+    $("#chat_" + localId).html(chatContent);
 
     var wordsPerMinute = 80;
     var words = properties.text.split(' ').length;
@@ -823,9 +866,14 @@ function bonzi(colorurl,left,top,property){
 		toName = tmp.textContent || tmp.innerText || toName;
 	}
 	toName = toName.trim();
+
+	var isMuted = foundBonzi && foundBonzi.mute === true;
+	var muteLabel = isMuted ? 'Unmute' : 'Mute';
+
 	$("#content").append(`
 		<div class='context_menu' id='context_${localId}' style='top:${parsetop}px; left: ${document.getElementById(localId).style.left}'>
 			<p class="context_text" id="${localId}_asshole" onclick='socket.emit("command",{type:"asshole",param:"${toName}"});'>Call an asshole</p>
+			<p class="context_text" id="${localId}_mute" onclick='(function(){var b=screenbonzis({id:"${localId}"});if(b){b.mute=!b.mute;document.getElementById("${localId}_mute").innerText=b.mute?"Unmute":"Mute";}})();'>${muteLabel}</p>
 			<div id="ctx_mod_${localId}"></div>
 		</div>`);
 	var modDiv = document.getElementById("ctx_mod_"+localId);
@@ -1136,8 +1184,8 @@ function login(){
 
 	let newMsg = urlify(data.msg.replaceAll('{NAME}',thisbonzi.name).replaceAll('{COLOR}',thisbonzi.color));
 	
-    newLog({name:thisbonzi.name,msg:newMsg});
-    thisbonzi.talk({text: newMsg});
+    newLog({name:thisbonzi.name, msg:newMsg, quote: data.quote || null});
+    thisbonzi.talk({text: newMsg, quote: data.quote || null});
   });
   socket.on("asshole", (data) => {
     let thisbonzi = screenbonzis({id: data.by});
