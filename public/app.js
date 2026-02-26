@@ -707,7 +707,7 @@ function bonzi(colorurl,left,top,property){
     }
     $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + properties.name);
     isStaticImage = false;
-    if(typeof properties.changeColor == "boolean"){if(properties.changeColor)img.src = properties.color;}
+    if(typeof properties.firstJoin == "boolean"){if(properties.firstJoin)img.src = properties.color;}
 	else {img.src = properties.color}
     draw(0,0);
     animate({type: "idle"});
@@ -781,21 +781,28 @@ function bonzi(colorurl,left,top,property){
     var yInt = parseInt(document.getElementById(localId).style.top);
     var xInt = parseInt(document.getElementById(localId).style.left);
     move({x: xInt, y: yInt});
-	let joinFrames = [
-		[6,17],[7,17],[8,17],[9,17],[10,17],[11,17],[12,17],[13,17],[14,17],[15,17],[16,17],[17,17],
-		[1,18],[2,18],[3,18],[4,18],[5,18],[6,18],[7,18],[8,18],[9,18],[10,18],[11,18],[12,18],[13,18],[14,18],
-		[1,1],null
-	];
-	let frameTick = this.frameTick;
-	joinFrames.forEach((frameInfo,i) => {
-		setTimeout(() => {
-			if(frameInfo != null){
-				toFrame(...frameInfo);
-			} else {
-				draw(0,0);
-			}
-		},i*frameTick);
-	});
+	if(typeof property.firstJoin == "boolean" ){
+		if(property.firstJoin){
+			let joinFrames = [
+				[6,17],[7,17],[8,17],[9,17],[10,17],[11,17],[12,17],[13,17],[14,17],[15,17],[16,17],[17,17],
+				[1,18],[2,18],[3,18],[4,18],[5,18],[6,18],[7,18],[8,18],[9,18],[10,18],[11,18],[12,18],[13,18],[14,18],
+				[1,1],null
+			];
+			let frameTick = this.frameTick;
+			joinFrames.forEach((frameInfo,i) => {
+				setTimeout(() => {
+					if(frameInfo != null){
+						toFrame(...frameInfo);
+					} else {
+						draw(0,0);
+					}
+				},i*frameTick);
+			});
+		} else {
+			draw(0,0);
+		}
+	}
+	
   }
   drawHats();
 
@@ -973,7 +980,7 @@ function resetUsers(userlist) {
     
     userAmt = userlist.length;
     for (i = 0; i < userAmt; i++) {
-        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||"", hats: userlist[i].hats||[]});
+        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||"", hats: userlist[i].hats||[],firstJoin:true});
         newuser.queue = bonzislist.length;
         bonzislist.push(newuser);
     }
@@ -1201,7 +1208,7 @@ function login(){
   });
   socket.on("newuser", (data) => {
 	document.getElementById('users_online').innerText = parseInt(document.getElementById('users_online').innerText)+1;
-    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||"", hats: data.hats||[]});
+    var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin: true});
 	newuser.queue = bonzislist.length;
     bonzislist.push(newuser);
   });
@@ -1232,7 +1239,7 @@ function login(){
     var n = data.name;
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
-    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],changeColor:false});
+    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
   });
   socket.on("nuke",()=>{
     document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
