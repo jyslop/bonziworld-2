@@ -134,6 +134,7 @@ background-image: url(/img/bonzi/bubble_point.png)
     position: absolute;
     background-color: white;
     width: 160px;
+	z-index:99999;
 }
 .context_text {
   position: relative;
