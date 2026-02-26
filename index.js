@@ -19,7 +19,7 @@ function isFucked(ip) {
 			if(proxiesIPV4.includes(ipv4value))result=true;
 		});
 	} else {
-		if(proxiesIPV4.includes(ipv4value))result=true;
+		if(proxiesIPV4.includes(ip))result=true;
 	}
     return result;
 }
@@ -66,7 +66,7 @@ let config = {
 		idLength:50,
 		nameLength:30
 	},
-    mediaWhitelist:['https://files.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
+    mediaWhitelist:['https://files.catbox.moe','https://litter.catbox.moe','https://wikipedia.org','https://i.ibb.co','https://upload.wikimedia.org'],
 	videoFormats:['.mp4','.mov'],
 	imageFormats:['.webp','.png','.jpeg','.jpg','.gif','.bmp','.ico'],
 	commands:{
@@ -149,7 +149,7 @@ let config = {
 		"godmode":(thisSocket,param)=>{
 			if(param == config.godword){
 				thisSocket.user.level=3;
-				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"Pope"},true);
+				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
 				return thisSocket.user;
 			}
 		},
@@ -176,24 +176,28 @@ let config = {
 				return thisSocket.user;
 			}
 		},
-		"image":(thisSocket,eventData)=>{
+		"media":(thisSocket,eventData)=>{
 			if(typeof eventData == "string"){
 				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
-				if(!config.imageFormats.some(r => eventData.endsWith(r)))return;
-				
-				let imgSend = blankify(eventData);
-				eventRoom('msg',{msg:'- <img class="user_img" src="'+imgSend+'">',id:thisSocket.user.id},thisSocket.user,true);
+				if(config.videoFormats.some(r => eventData.endsWith(r))){
+					let videoSend = blankify(eventData);
+					eventRoom('msg',{msg:'- <video class="user_vid" controls><source src="'+videoSend+'" type="video/mp4"></video>',id:thisSocket.user.id},thisSocket.user,true);
+				}
+				if(config.imageFormats.some(r => eventData.endsWith(r))){
+					let imgSend = blankify(eventData);
+					eventRoom('msg',{msg:'- <img class="user_img" src="'+imgSend+'">',id:thisSocket.user.id},thisSocket.user,true);
+				}
 			}
 		},
+		"image":(thisSocket,eventData)=>{
+			if(typeof eventData != "string")return;
+			return config.commands["media"](thisSocket,eventData);
+		},
 		"video":(thisSocket,eventData)=>{
-			if(typeof eventData == "string"){
-				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)))return;
-				if(!config.videoFormats.some(r => eventData.endsWith(r)))return;
-				
-				let videoSend = blankify(eventData);
-				eventRoom('msg',{msg:'- <video class="user_vid" controls><source src="'+videoSend+'" type="video/mp4"></video>',id:thisSocket.user.id},thisSocket.user,true);
-			}
-		}
+			if(typeof eventData != "string")return;
+			return config.commands["media"](thisSocket,eventData);
+		},
+		
 	}
 };
 var godword = "wewuzchatascoloredmunkeez";
@@ -380,6 +384,7 @@ io.on("connection", function(socket){
 					if(typeof data == "object"){
 						if(typeof data.msg !== "string")return;
 						data.msg = blankify(data.msg);
+						if(data.msg.length < 1)return;
 						if(typeof data.quote == "object"){
 							if(typeof data.quote.msg == "string" && typeof data.quote.name == "string"){
 								data = {
