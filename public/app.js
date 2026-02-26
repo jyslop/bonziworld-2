@@ -26,8 +26,8 @@ class Notify {
         let y = r.y-h;
         document.getElementById('content').insertAdjacentHTML('beforeend',`
             <div class="bubble_chat" style="left:${x}px;top:${y}px;width:350px;height:100px;padding:0px 0px;max-width:400px;max-height:100px;z-index:9999;" id="${this.id}">
-                <div style="padding:0px;height:10px;margin-top:-10px;"><img src="${properties.icon}" width="14" height="14"> &nbsp; <b>${properties.title}</b> <button style="width:20px;height:20px;float:right;" onclick="document.getElementById('${this.id}').remove();document.getElementById('icon_toggle_btn').style.visibility = 'visible';">X</button></div>
-            <div style="height:max-content;font-family:'WinXP';font-size:16px;">${properties.body}</div>
+                <div style="padding:0px;height:10px;margin-top:-25px;"><img src="${properties.icon}" width="14" height="14"> &nbsp; <b>${properties.title}</b> <button style="width:20px;height:20px;float:right;" onclick="document.getElementById('${this.id}').remove();document.getElementById('icon_toggle_btn').style.visibility = 'visible';">X</button></div>
+            <div style="height:max-content;font-family:'WinXP';font-size:16px;overflow:hidden;padding:3px;">${properties.body}</div>
         </div>
         `);
         let nopelie = () => {
@@ -160,27 +160,7 @@ let applets = {
 	buttonId:"media_upload",
 	open:false,
 	onpress:()=>{
-		if(document.body.innerHTML.includes('id="media_upload_input"')){errs["applet_open"](); return;}
-		new Dialog({title:"Images And Videos",width:'320',height:'200',html:`
-			<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
-				<input type="file" accept="image/*,video/*" id="media_upload_input" style="display:none;">
-				<button onclick="document.getElementById('media_upload_input').click();" style="width:120px;height:120px;font-size:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
-				<p style="font-size:12px;text-align:center;">Click to upload an image or video to Catbox</p>
-			</div>
-		`});
-		document.getElementById('media_upload_input').onchange = (e) => {
-			let file = e.target.files[0];
-			if(!file)return;
-			let isVideo = file.type.startsWith('video/');
-			let formData = new FormData();
-			formData.append('reqtype','fileupload');
-			formData.append('fileToUpload',file);
-			fetch('https://catbox.moe/user/api.php',{method:'POST',body:formData}).then(r=>r.text()).then(url=>{
-				url = url.trim();
-				if(isVideo){socket.emit('command',{type:'vid',param:url});}
-				else{socket.emit('command',{type:'img',param:url});}
-			});
-		};
+		uploadPopup();
 	},
 	},
 	"bonzilog":{
@@ -332,21 +312,78 @@ function sendMsg(){
   }
   $("#chat_message").val("")
 }
-function notif(head, body, top, left, type){
-  let localId = Id(10);
-  $("#content").append("<div class='notif' id='"+localId+"' style='top:"+top+";left:"+left+";'><div class='notif_cont'><h3 class='notif_header'>"+head+"</h3><div class='body'>"+body+"</div></div></div>");
-  document.body.onresize = () => {
-    var info = document.getElementById("info_icon").getBoundingClientRect().x - 330;
-    var info2 = $(window).height() - 140;
-    var infox = info + "px";
-    var infoy = info2 + "px";
-    if(type == "info")
-    $("#"+localId).css({
-       "top": infoy,
-       "left": infox
+
+//shameless skidding from erik because api's are invented by peabrained dickmilkers
+function uploadPopup(initialFile) {
+    let blobUrl = null;
+    let dialog = new Dialog({
+        title: "Send Image Or Video",
+        x: 20,
+        y: 50,
+        width: 300,
+        height: 200,
+        html: `
+            <button class="upload_dropzone">+</button>
+            <div style="height: 2px;"></div>
+            <input type="file" accept="image/*, video/*" class="upload_input" hidden>
+            <div class="upload_buttons">
+                <button class="xp-button upload_button" disabled>Send</button>
+            </div>
+        `,
+        onclose: () => {
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+        },
     });
-  }
-  setTimeout(() => { $("#"+localId).remove(); },6000)
+    let element = dialog.element;
+    let dropzone = element.querySelector(".upload_dropzone");
+    let button = element.querySelector(".upload_button");
+	console.log(button);
+    let fileInput = element.querySelector(".upload_input");
+    let blob = null;
+
+    function loadFile(file) {
+        if (!file) return;
+        blob = file;
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+        blobUrl = URL.createObjectURL(blob);
+        dropzone.style.background = `url("${blobUrl}") center center / contain no-repeat`;
+        button.disabled = false;
+    }
+
+    if (initialFile) loadFile(initialFile);
+
+    dropzone.onclick = () => fileInput.click();
+    fileInput.onchange = () => loadFile(fileInput.files[0]);
+
+    dropzone.ondragover = (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = "#003c74";
+    };
+
+    dropzone.ondragleave = () => {
+        dropzone.style.borderColor = "";
+    };
+
+    dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = "";
+        loadFile(e.dataTransfer.files[0]);
+    };
+    button.onclick = async () => {
+		console.log(blobUrl);
+        if (!blobUrl) return;
+        let formData = new FormData();
+        formData.append("reqtype", "fileupload");
+        formData.append("fileToUpload", blob);
+        formData.append("time", "1h");
+        let response = await fetch("https://litterbox.catbox.moe/resources/internals/api.php", {
+            method: "POST",
+            body: formData,
+        });
+        let url = await response.text();
+        socket.emit("command",{type:"media",param:url});
+        dialog.element.remove();
+    };
 }
 let sanitize = (txt) => {return txt;};
 let lastZ = 0;
@@ -498,7 +535,12 @@ function bonzi(colorurl,left,top,property){
       }
     }
   };
-
+	var toFrame = (frameColumn,frameRow) => {
+		let newX = (width*frameColumn)-width;
+		let newY = (height*frameRow)-height;
+		
+		draw(newX,newY);
+	}
   var animate = (properties) => {
     if(isStaticImage){
       draw(0,0);
@@ -521,32 +563,7 @@ function bonzi(colorurl,left,top,property){
       },80);
       setTimeout(()=>{clearInterval(anim)},750);
     }
-    if(properties.type == "smile"){
-      let x = width * 11;
-      let y = height * 11;
-      var col = columns * width - width - width;
-      var row = y;
-      var anim = setInterval(() => {
-        if(x > col){x = 0; y+=height;}
-        
-        draw(x,y);
-        x+=200;
-      },80);
-      setTimeout(()=>{clearInterval(anim)},3000);
-    }
-    if(properties.type == "enter"){
-      let x = width * 11;
-      let y = height * 11;
-      var col = columns * width - width - width;
-      var row = y;
-      var anim = setInterval(() => {
-        if(x > col){x = 0; y+=height;}
-
-        draw(x,y);
-        x+=200;
-      },80);
-      setTimeout(()=>{clearInterval(anim)},3000);
-    }
+    
   }
   var move = (properties) => {
     var yInt = parseInt(properties.y);
@@ -660,6 +677,7 @@ function bonzi(colorurl,left,top,property){
 	  bonzislist.splice(screenbonzis({id:localId}).queue,1);
 	  bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
   };
+  this.toFrame = toFrame;
   this.animate = animate;
   this.move = move;
   this.draw = draw;
