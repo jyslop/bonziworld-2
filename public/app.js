@@ -48,6 +48,19 @@ class Notify {
         setTimeout(() => {if(document.getElementById(this.id) != null)document.getElementById('icon_toggle_btn').style.visibility = 'visible';},8000);
     }
 };
+function insertNuke(x,y,color){
+    let localId = Id(5);
+    document.body.insertAdjacentHTML('beforeend',`
+    <div style="width:200px;height:200px;overflow:hidden;position:absolute;left:${x}px;top:${y}px;animation:flyaway 1s ease-in;z-index:999;" id="${localId}">
+        <div style="overflow:hidden;width:200px;height:160px;">
+            <img src="${color}" width="3300" height="auto">
+        </div>
+        <img src="./img/desktop/nuke.gif" width="200" height="auto" style="position:relative;top:-200px;">
+        
+    </div>
+    `);
+    setTimeout(() => {document.getElementById(localId).remove();},1000);
+}
 function getCookie(cname) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -707,7 +720,10 @@ function bonzi(colorurl,left,top,property){
     }
     $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + properties.name);
     isStaticImage = false;
-    if(typeof properties.firstJoin == "boolean"){if(properties.firstJoin)img.src = properties.color;}
+    if(typeof properties.firstJoin == "boolean"){
+		property.firstJoin = properties.firstJoin;
+		img.src = properties.color;
+	}
 	else {img.src = properties.color}
     draw(0,0);
     animate({type: "idle"});
@@ -1102,17 +1118,17 @@ function login(){
     <button onclick="window.bonziVMsrc='https://bonzi.gay';">
     <h2>Bonzi.Gay</h2>
     <hr>
-    Erik's standard BonziWORLD.
+    Erik's standard BonziWORLD. Opens in a chrome tab due to his WASM addiction.
     </button>
     <button onclick="window.bonziVMsrc='https://hugboxworldrevived.onrender.com/';">
     <h2>HugboxWORLD</h2>
     <hr>
     A fucked up BonziWORLD.
     </button>
-     <button onclick="window.bonziVMsrc='https://bonziworld-revived-1.onrender.com/';">
-    <h2>BonziWORLD Revived Classic</h2>
+     <button onclick="window.bonziVMsrc='https://bonziworld.me';">
+    <h2>BonziWORLD.me</h2>
     <hr>
-    Seamus's shitty mutated retarded brainchild.
+    A bonzi.ga revival by donutscout.
     </button>
     <hr>
     <input type="text" placeholder="Custom BonziWORLD URL" id="customurl"><button onclick="window.bonziVMsrc=customurl.value;">Submit</button>
@@ -1236,14 +1252,17 @@ function login(){
     queue.forEach((queueText,i) => { setTimeout(() => { thisbonzi.talk({text:queueText});},(i-0.2)*txtDuration(queueText)); });
   });
   socket.on("updateUser", (data) => {
-    var n = data.name;
+    let n = data.name;
+	let oldBonzi = screenbonzis({id: data.id});
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
     screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
   });
-  socket.on("nuke",()=>{
-    document.body.innerHTML='<div style="background:#000;color:#0f0;font-family:monospace;padding:40px;height:100vh;box-sizing:border-box;"><h1>NUKED</h1><p>You have been nuked by a moderator.</p><a href="#" onclick="window.location.reload()" style="color:#0f0;">Reload?</a></div>';
-    socket.disconnect();
+  socket.on("nuke",(data)=>{
+    let nuketarget = screenbonzis({id:data.id});
+	let positioning = document.getElementById(data.id).getBoundingClientRect();
+	insertNuke(positioning.x,positioning.y,nuketarget.color);
+	setTimeout(() => {nuketarget.leave();},3000);
   });
   socket.on("disconnect", () => {
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
