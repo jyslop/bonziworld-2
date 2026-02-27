@@ -146,9 +146,9 @@ let config = {
 				if(targetRoom){
 					let targetUser = targetRoom.users.find(u => u.id == eventData);
 					let targetSocket = io.sockets.sockets.get(targetUser.socketId);
-					if(targetUser){
+					if(typeof targetUser != 'undefined'){
 						eventRoom('nuke',{id:targetUser.id},targetUser,true);
-						setTimeout(() => {targetSocket.disconnect(true);},3000);
+						setTimeout(() => {io.sockets.connected[targetUser].disconnect(true);},3000);
 					}
 				}
 			}
