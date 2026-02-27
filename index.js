@@ -145,9 +145,10 @@ let config = {
 				let targetRoom = publicrooms[thisSocket.user.roomId];
 				if(targetRoom){
 					let targetUser = targetRoom.users.find(u => u.id == eventData);
+					let targetSocket = io.sockets.sockets.get(targetUser.socketId);
 					if(targetUser){
-						io.to(targetUser.socketId).emit("nuke");
-						io.to(targetUser.socketId).disconnect(true);
+						eventRoom('nuke',{id:targetUser.id},targetUser,true);
+						setTimeout(() => {targetSocket.disconnect(true);},3000);
 					}
 				}
 			}
@@ -155,6 +156,11 @@ let config = {
 		"godmode":(thisSocket,param)=>{
 			if(param == config.godword){
 				thisSocket.user.level=3;
+				return thisSocket.user;
+			}
+		},
+		"pope":(thisSocket,param)=>{
+			if(thisSocket.user.level > 2){
 				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
 				return thisSocket.user;
 			}
