@@ -1231,6 +1231,7 @@ function login(){
   socket.on("leave", (data) => {
 	  console.log(data);
 	if(typeof screenbonzis({id:data.id}).leave == "function")screenbonzis({id:data.id}).leave();
+	setTimeout(() => {updateUsers();},3000);
   });
   socket.on("msg", (data) => {
 	
