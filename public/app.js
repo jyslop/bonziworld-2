@@ -990,16 +990,22 @@ function screenbonzis(properties){
     };
 function resetUsers(userlist) {
     bonzislist.forEach(bonziData => {
-        ['', 'name_', 'chat_', 'point_'].forEach(prefix => {
-            let el = document.getElementById(prefix + bonziData.id);
-            if (el) el.remove();
-        });
-        for (let i = 1; i <= 5; i++) {
-            let hat = document.getElementById('hat' + i + '_' + bonziData.id);
-            if (hat) hat.remove();
+        let ids = [bonziData.id, 'name_'+bonziData.id, 'chat_'+bonziData.id, 'point_'+bonziData.id];
+        ids.forEach(id => { let el = document.getElementById(id); if(el) el.remove(); });
+        for(let i = 1; i <= 5; i++) {
+            let h = document.getElementById('hat'+i+'_'+bonziData.id);
+            if(h) h.remove();
         }
     });
     bonzislist = [];
+
+    userAmt = userlist.length;
+    for(let i = 0; i < userAmt; i++) {
+        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||"", hats: userlist[i].hats||[], firstJoin: true});
+        newuser.queue = bonzislist.length;
+        bonzislist.push(newuser);
+    }
+    updateUsers();
 }
 let listenerNames = ["msg","asshole","userlist","leave","newuser","room"];
 function reconnect(){
