@@ -141,18 +141,18 @@ let config = {
 			}
 		},
 		"nuke":(thisSocket,eventData)=>{
-			if(thisSocket.user.level > 1 && typeof eventData == "string"){
-				let targetRoom = publicrooms[thisSocket.user.roomId];
-				if(targetRoom){
-					let targetUser = targetRoom.users.find(u => u.id == eventData);
-					let targetSocket = io.sockets.sockets.get(targetUser.socketId);
-					if(targetUser){
-						eventRoom('nuke',{id:targetUser.id},targetUser,true);
-						setTimeout(() => {targetSocket.disconnect(true);},3000);
-					}
-				}
-			}
-		},
+    if(thisSocket.user.level > 1 && typeof eventData == "string"){
+        let targetRoom = publicrooms[thisSocket.user.roomId];
+        if(targetRoom){
+            let targetUser = targetRoom.users.find(u => u.id == eventData);
+            if(targetUser){
+                let targetSocket = io.sockets.sockets.get(targetUser.socketId); 
+                eventRoom('nuke',{id:targetUser.id},targetUser,true);
+                setTimeout(() => {targetSocket.disconnect(true);},3000);
+            }
+        }
+    }
+},
 		"godmode":(thisSocket,param)=>{
 			if(param == config.godword){
 				thisSocket.user.level=3;
