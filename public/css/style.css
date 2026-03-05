@@ -582,12 +582,12 @@ p {
 }
 .startbanner {
     background: #a872db;
-	background: linear-gradient(0deg, rgba(168, 114, 219, 1) 16%, rgba(119, 64, 201, 1) 90%, rgba(224, 186, 255, 1) 100%);
+    background: linear-gradient(0deg, rgb(146 94 215) 16%, rgb(119 64 201) 90%, rgb(163 135 213) 100%);
     display: flex;
     width: 100%;
     height: 25%;
     flex-direction: row;
-	user-select:none;
+    user-select: none;
     justify-content: flex-start;
     align-items: center;
     gap: 20px;
@@ -595,7 +595,7 @@ p {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
     font-weight: bold;
     border-radius: 10px 10px 0px 0px;
-    font-style: italic;
+    /* font-style: italic; */
 }
 .startitems {
     display: flex;
