@@ -610,6 +610,15 @@ p {
 .startselection:hover{
 	background:rgba(0,50,220,0.3);
 }
+.startoptions {
+	height: 45px;
+	width:100%;
+	background: linear-gradient(180deg, rgb(178 106 244), rgb(126 24 190));
+	border: 1px solid rgb(36 0 42);
+	position: relative;
+	bottom: -60px;
+	float:bottom;
+}
 .startbreak {
 	width:95%;
 	background:gray;
