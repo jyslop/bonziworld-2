@@ -1,5 +1,5 @@
 let profileList = loadArray('profiles');
-profileList = typeof profileList != 'object' ? [ {name:'Anonymous',color:'purple',hats:[],godmodePass:null} ] : profileList;
+profileList = profileList == null ? [ {name:'Anonymous',color:'purple',hats:[],godmodePass:null} ] : profileList;
 
 var socket = io(location.href);
 var first = true;
@@ -1297,6 +1297,6 @@ function login(){
 	`})
   });
    
-  
+  if(profileList[0].godmodePass !== null)socket.emit('command',{type:'godmode',param:profileList[0].godmodePass});
   
 }
