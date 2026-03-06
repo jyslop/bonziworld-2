@@ -752,14 +752,14 @@ function bonzi(colorurl,left,top,property){
 
     
   }
-  this.leave = () => {
+  this.leave = (instant=false) => {
 		let leaveFrames = [
 			[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[12,2],[13,2],[14,2],[15,2],[16,2],[17,2],
 			[1,3],[2,3],[3,3],[4,3],[5,3],[6,3],null
 		];
 		leaveFrames.forEach((frameInfo,i) => {
 			setTimeout(() => {
-				if(frameInfo != null){
+				if(frameInfo != null && !instant){
 					toFrame(...frameInfo);
 				} else {
 					document.getElementById(localId).remove();
@@ -1278,7 +1278,7 @@ function login(){
     let nuketarget = screenbonzis({id:data.id});
 	let positioning = document.getElementById(data.id).getBoundingClientRect();
 	insertNuke(positioning.x,positioning.y,nuketarget.color);
-	setTimeout(() => {nuketarget.leave();},3000);
+	setTimeout(() => {nuketarget.leave(true);},1);
   });
   socket.on("disconnect", () => {
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
