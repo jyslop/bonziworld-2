@@ -146,7 +146,7 @@ let config = {
         if(targetRoom){
             let targetUser = targetRoom.users.find(u => u.id == eventData);
             if(targetUser){
-                let targetSocket = io.sockets.sockets.get(targetUser.socketId); 
+                let targetSocket = targetUser.socket; 
                 eventRoom('nuke',{id:targetUser.id},targetUser,true);
                 setTimeout(() => {targetSocket.disconnect(true);},3000);
             }
@@ -345,6 +345,7 @@ io.on("connection", function(socket){
 		msgAttempts:0,
 		level:1,
 		tag:"",
+		socket:socket
 	};
 	
 	socket.on("login", (data) => {
