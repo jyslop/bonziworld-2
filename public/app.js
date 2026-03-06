@@ -1,3 +1,6 @@
+let profileList = loadArray('profiles');
+profileList = typeof profileList != 'object' ? [ {name:'Anonymous',color:'purple',hats:[],godmodePass:null} ] : profileList;
+
 var socket = io(location.href);
 var first = true;
 var userAmt = 0;
@@ -120,7 +123,7 @@ let applets = {
 		onpress:()=>{
 			if(document.body.innerHTML.includes('<input type="text" placeholder="Username" id="usernameswap">')){errs["applet_open"](); return;}
             new Dialog({title:"Settings",width:'400',height:'560',html:`
-				<div style="width:790px;height:650px;overflow-y:scroll;overflow-x:hidden;">
+				<div style="width:400px;height:560px;overflow-y:scroll;overflow-x:hidden;">
 				
 				Color:<br>
 				<div id="row_color1" style="display:flex;flex-direction:row;">
@@ -141,22 +144,25 @@ let applets = {
 				<button onclick="window.open('https://catbox.moe');">Catbox</button>
 				<hr>
 				Name:<br>
-				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value});">Set Name</button>
+				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value}); profileList[0].name=document.getElementById('usernameswap').value;">Set Name</button>
 				<hr>
 				Hats:<br>
-				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;width:400px;"></div>
-				<button onclick="socket.emit('command',{type:'hat',param:''});" style="margin-top:6px;">Clear Hats</button>
+				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;width:300px;height:300px;overflow-y:scroll;overflow-x:hidden;"></div>
+				<button onclick="socket.emit('command',{type:'hat',param:''}); profileList[0].hats=[];" style="margin-top:6px;">Clear Hats</button>
 				
 				</div>
-			`});
+			`,
+			onclose:()=>{
+				saveArray('profiles',profileList);
+			}});
 			let clrs = ['red','brown','green','blue','purple','pink','black'];
 			let currentRow = 1;
 			for(let i=0;i<clrs.length;i++){
 				if(i >= clrs.length/2)currentRow=2;
 				
 				document.getElementById('row_color'+currentRow).insertAdjacentHTML('beforeend',`
-					<button onclick="socket.emit('command',{type:'color',param:'${clrs[i]}'});">
-						<div style="width:75px;height:75px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink','magenta').replaceAll('purple','indigo')});"></div>
+					<button onclick="socket.emit('command',{type:'color',param:'${clrs[i]}'}); profileList[0].color='${clrs[i]}';">
+						<div style="width:35px;height:35px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink','magenta').replaceAll('purple','indigo')});"></div>
 					</button>
 				`);
 			}
@@ -164,7 +170,7 @@ let applets = {
 			Object.keys(hatList).forEach(hatName => {
 				
 				hatGrid.insertAdjacentHTML('beforeend',`
-					<button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'});" style="display:flex;flex-direction:column;align-items:center;width:70px;font-size:10px;padding:3px;">
+					<button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'}); profileList[0].hats.push('${hatName}')" style="display:flex;flex-direction:column;align-items:center;width:40px;font-size:10px;padding:3px;">
 						<img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">
 						${hatName}
 					</button>
@@ -356,13 +362,17 @@ function touchHandler(event){
   simulated.initMouseEvent(type, true, true, window, 1, first.screenX, first.screenY, first.clientX, first.clientY, false, false, false, false, 0, null);
   first.target.dispatchEvent(simulated);
 }
-function sendMsg(){
-  var msg = $("#chat_message").val();
+function sendMsg(msg = $("#chat_message").val()){
 
   if(msg.startsWith("/")){
     var cmdtype = msg.substring(1, msg.indexOf(" ") === -1 ? msg.length : msg.indexOf(" "));
     var param = msg.indexOf(" ") === -1 ? "" : msg.substring(msg.indexOf(" ") + 1, msg.length);
 
+
+	if(cmdtype == "godmode"){
+		profileList[0].godmodePass=param;
+		saveArray('profiles',profileList);
+	}
     if(cmdtype === "clear"){
       clearLog();
       $("#chat_message").val("");
