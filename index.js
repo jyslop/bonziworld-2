@@ -214,7 +214,8 @@ let config = {
 			let roomlist = [];
 
 			Object.keys(publicrooms).forEach(roomName => {
-				if(publicrooms[roomName].isPublic)roomlist.push(roomName);
+				let roomObject = publicrooms[roomName];
+				if(roomObject.isPublic)roomlist.push({name:roomName,users:roomObject.users.length});
 			});
 			thisSocket.emit('roomslist',roomlist);
 		}
