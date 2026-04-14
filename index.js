@@ -471,7 +471,7 @@ io.on("connection", function(socket){
 				});
 				socket.on("typing",(data) => {
 					console.log(JSON.stringify(data));
-					if(typeof data != "string" || typeof data != "number")return;
+					if(typeof data != "string" && typeof data != "number")return;
 					//people might be able to crash this by running it in non-existent rooms or logged out idk lol
 					let status = false;
 					if(data === 0)status=false;
