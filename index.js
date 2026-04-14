@@ -209,7 +209,15 @@ let config = {
 			if(typeof eventData != "string")return;
 			return config.commands["media"](thisSocket,eventData);
 		},
-		
+		"getrooms":(thisSocket,eventData)=>{
+			if(typeof eventData != "string")return;
+			let roomlist = [];
+
+			Object.keys(publicrooms).forEach(roomName => {
+				if(publicrooms[roomName].isPublic)roomlist.push(roomName);
+			});
+			thisSocket.emit('roomslist',roomlist);
+		}
 	}
 };
 var godword = "wewuzchatascoloredmunkeez";
@@ -246,7 +254,9 @@ let colorNames = Object.keys(colorList);
 var botmsg = [
 "- hi",'- bundasworld revive HD deluxe ++'];
 
-var publicrooms ={ "default":{ 
+var publicrooms ={ "default":{
+   isPublic:true,
+	owner:'none',
    users: [
     {name: "BonziBUDDY", color: "/img/bonzi/purple.png", id: "bonzibuddy", tag:"<img src='/img/desktop/icons/server.png' class='tagicon'>",pitch: 80, speed: 150, messages: [],socketId:"bonziBuddy", hats:[]}
   ]
@@ -303,7 +313,7 @@ function updateUser(originalUser,socketData,localDisplay=false){
 	let result = Object.assign(originalUser,socketData);
 	let currentRoom = publicrooms[originalUser.roomId];
 	if(typeof currentRoom != 'object'){
-		publicrooms[originalUser.roomId]={users:[]};
+		publicrooms[originalUser.roomId]={isPublic:false,owner:originalUser.id,users:[]};
 		currentRoom = publicrooms[result.roomId];
 		result.roomIndex = currentRoom.users.length;
 	}
@@ -387,7 +397,9 @@ io.on("connection", function(socket){
 				let roomUsers = getUsers(data.room);
 				let publicUser = getUsers(data.room)[socket.user.roomIndex];
 				eventRoom("newuser",publicUser,socket.user);
-				socket.emit("room",{isPublic:true,isOwner:false,id:socket.user.roomId});
+
+				let matchingIds = publicrooms[data.room].owner == socket.user.id;
+				socket.emit("room",{isPublic:true,isOwner:matchingIds,id:socket.user.roomId});
 				socket.emit("userlist",{list:roomUsers});
 				
 				socket.user.loggedIn=true;
