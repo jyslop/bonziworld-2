@@ -797,8 +797,8 @@ function bonzi(colorurl,left,top,property){
 		  if(eventCall[0] == 'msg'){
 			  setTimeout(() => {
 				  socket.emit(...eventCall);
-			  },(i*1000)*lastMsgLength);
-			  lastMsgLength=txtDuration(eventCall[1].msg);
+			  },lastMsgLength);
+			  lastMsgLength=i*txtDuration(eventCall[1].msg);
 		  } else  {
 			  
 		  }
