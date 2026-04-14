@@ -72,7 +72,7 @@ let config = {
 	imageFormats:['.webp','.png','.jpeg','.jpg','.gif','.bmp','.ico'],
 	commands:{
 		"color":(thisSocket,eventData)=>{
-			if(typeof eventData == "string"){
+			if(typeof eventData == "string"){ //i already check the types but might as well give the shop owner a self-defense weapon too
 				
 				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
 				if(colorNames.includes(eventData) && eventData !== "pope")eventData=colorList[eventData];
@@ -103,9 +103,33 @@ let config = {
 				...i[Math.floor(Math.random()*i.length)],
 			 	['animation_preset','shrug_fwd'],
 				...m[Math.floor(Math.random()*m.length)],
-				...e[Math.floor(Math.random()*e.length)]
+				['animation_reset'],
+				...e[Math.floor(Math.random()*e.length)],
+				['animation_reset'],
 			];
 			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct});
+		},
+		"fact":(thisSocket,eventData)=>{
+			if(typeof eventData != 'string')return;
+			let i = copypastas['facts'].intros;
+			let m = copypastas['facts'].middle;
+			let e = copypastas['facts'].ending;
+			let eventConstruct = [
+				...i[Math.floor(Math.random()*i.length)],
+				...m[Math.floor(Math.random()*m.length)],
+				['animation_reset'],
+				...e[Math.floor(Math.random()*e.length)],
+				['animation_reset'],
+			];
+			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct});
+		},
+		"linux":(thisSocket,eventData)=>{
+			if(typeof eventData != "string")return;
+			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['linux'] });
+		},
+		"joel":(thisSocket,eventData)=>{
+			if(typeof eventData != "string")return;
+			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['joel'] });
 		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
