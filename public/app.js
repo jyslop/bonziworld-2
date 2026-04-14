@@ -1309,7 +1309,9 @@ function login(){
 	let oldBonzi = screenbonzis({id: data.id});
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
-    screenbonzis({id: data.id}).update({name: data.name,typing:data.typing, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
+
+	let indicator = data.typing == true ? ' (...)' : '';
+    screenbonzis({id: data.id}).update({name: data.name+indicator,typing:data.typing, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
   });
   socket.on("nuke",(data)=>{
     let nuketarget = screenbonzis({id:data.id});
