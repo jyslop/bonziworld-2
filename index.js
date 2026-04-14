@@ -324,7 +324,7 @@ function blankify(txt,limiter=1024){
 function getUsers(roomId){
 	let result = [];
 	publicrooms[roomId].users.forEach(fullUser => {
-		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats||[],tag:fullUser.tag||""};
+		let obfuscatedUser = {name:fullUser.name,color:fullUser.color,id:fullUser.id,pitch:fullUser.pitch,speed:fullUser.speed,hats:fullUser.hats||[],tag:fullUser.tag||"",typing:fullUser.typing};
 		result.push(obfuscatedUser);
 	});
 	return result;
@@ -386,6 +386,7 @@ io.on("connection", function(socket){
 		ip: socket.handshake.headers["x-forwarded-for"] || "127.0.0.1",
 		loggedIn:false,
 		roomId:"default",
+		typing:false,
 		roomIndex:0,
 		canMsg:true,
 		pitch:80,
@@ -467,6 +468,19 @@ io.on("connection", function(socket){
 							socket.user.msgAttempts--;
 						},(socket.user.msgAttempts)*config.rateLimit);
 					}
+				});
+				socket.on("typing",(data) => {
+					if(typeof data != "string" || typeof data != "number")return;
+					//people might be able to crash this by running it in non-existent rooms or logged out idk lol
+					let status = false;
+					if(data === 0)status=false;
+					if(data === 1)status=true;
+						
+					updateUser(
+							socket.user,
+							{typing:status},
+							true
+						);
 				});
 				socket.on("command", (data) => {
 					if(typeof data == "object"){
