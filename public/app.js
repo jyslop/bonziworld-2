@@ -674,7 +674,7 @@ function bonzi(colorurl,left,top,property){
       }
     }
   }
-  var talk = (properties) => {
+  var talk = (properties,onendCallback) => {
 	 
     if(this.mute == true){
       return;
@@ -698,7 +698,7 @@ function bonzi(colorurl,left,top,property){
       wordsPerMinute = 4;
     }
     var approximateDuration = (words / wordsPerMinute) * 60 * 1000; 
-    speak.play(properties.text, { pitch: property.pitch, speed: property.sped });
+    speak.play(properties.text, { pitch: property.pitch, speed: property.sped },onendCallback);
 
     $("#bworg").click(() => {
       window.open("https://bonziworld.org","_blank");
@@ -792,17 +792,19 @@ function bonzi(colorurl,left,top,property){
 		  }
 	  };
 	  let lastMsgLength = 1;
-	  for(let i=0;i<eventArray.length;i++){
+	  let i = 0;
+	  let processArray = () => {
 		  let eventCall = eventArray[i];
 		  if(eventCall[0] == 'msg'){
-			  setTimeout(() => {
-				  socket.emit(...eventCall);
-			  },lastMsgLength);
-			  lastMsgLength+=txtDuration(eventCall[1].msg);
+			  talk(eventCall[1].msg,()=>{
+				  i++;
+				  processArray();
+			  });
 		  } else  {
-			  
+			  i++;
+			  processArray();
 		  }
-	  }
+	  };
   };
 
   var pos = {x: document.getElementById(localId).style.left, y: document.getElementById(localId).style.top};
