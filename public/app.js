@@ -796,7 +796,7 @@ function bonzi(colorurl,left,top,property){
 	  let processArray = () => {
 		  let eventCall = eventArray[i];
 		  if(eventCall[0] == 'msg'){
-			  talk(eventCall[1].msg,()=>{
+			  talk({text:eventCall[1].msg},()=>{
 				  i++;
 				  processArray();
 			  });
