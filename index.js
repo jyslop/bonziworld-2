@@ -121,15 +121,15 @@ let config = {
 				...e[Math.floor(Math.random()*e.length)],
 				['animation_reset'],
 			];
-			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct});
+			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct},thisSocket.user,true);
 		},
 		"linux":(thisSocket,eventData)=>{
 			if(typeof eventData != "string")return;
-			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['linux'] });
+			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['linux'] },thisSocket.user,true);
 		},
 		"joel":(thisSocket,eventData)=>{
 			if(typeof eventData != "string")return;
-			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['joel'] });
+			eventRoom("userEvent",{id:thisSocket.user.id,events:copypastas['extra']['joel'] },thisSocket.user,true);
 		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
