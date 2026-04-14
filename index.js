@@ -1,4 +1,5 @@
-var express = require('express')
+var express = require('express');
+var copypastas = require('./copypastas.js');
 var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
@@ -92,6 +93,19 @@ let config = {
 				thisSocket.user = updateUser(thisSocket.user,{name:eventData},true);
 				return thisSocket.user;
 			}
+		},
+		"joke":(thisSocket,eventData)=>{
+			if(typeof eventData != 'string')return;
+			let i = copypastas['jokes'].intros;
+			let m = copypastas['jokes'].middle;
+			let e = copypastas['jokes'].ending;
+			let eventConstruct = [
+				...i[Math.floor(Math.random()*i.length)],
+			 	['animation_preset','shrug_fwd'],
+				...m[Math.floor(Math.random()*m.length)],
+				...e[Math.floor(Math.random()*e.length)]
+			];
+			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct});
 		},
 		"asshole":(thisSocket,eventData)=>{
 			eventData = {to:eventData};
