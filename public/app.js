@@ -791,12 +791,14 @@ function bonzi(colorurl,left,top,property){
 			  "back":[]
 		  }
 	  };
+	  let lastMsgLength = 1;
 	  for(let i=0;i<eventArray.length;i++){
 		  let eventCall = eventArray[i];
 		  if(eventCall[0] == 'msg'){
 			  setTimeout(() => {
 				  socket.emit(...eventCall);
-			  },i*txtDuration(eventCall[i].msg));
+			  },(i*1000)*lastMsgLength);
+			  lastMsgLength=txtDuration(eventCall[1].msg);
 		  } else  {
 			  
 		  }
