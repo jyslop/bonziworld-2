@@ -784,6 +784,24 @@ function bonzi(colorurl,left,top,property){
   this.talk = talk;
   this.update = update;
   this.joke = joke;
+  this.parseEvents = (eventArray) => {
+	  let presetFrames = {
+		  "shrug":{
+			  "fwd":[],
+			  "back":[]
+		  }
+	  };
+	  for(let i=0;i<eventArray.length;i++){
+		  let eventCall = eventArray[i];
+		  if(eventCall[0] == 'msg'){
+			  setTimeout(() => {
+				  socket.emit(...eventCall);
+			  },i*txtDuration(eventCall[1].msg));
+		  } else  {
+			  
+		  }
+	  }
+  };
 
   var pos = {x: document.getElementById(localId).style.left, y: document.getElementById(localId).style.top};
 
@@ -1017,7 +1035,7 @@ function resetUsers(userlist) {
     }
     updateUsers();
 }
-let listenerNames = ["msg","asshole","userlist","leave","newuser","room"];
+let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
 function reconnect(){
 	resetUsers([]);
 	socket.connect();
@@ -1102,9 +1120,23 @@ function login(){
   $("#login_load").show();
   socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
 
-  document.getElementById("chat_message").onkeyup = (e) => {
+  let typingStatus = {
+	  focused:false,
+	  typed:false,
+  };
+  document.getElementById("chat_message").onfocusin = () => {typingStatus.focused=true;};
+  document.getElementById("chat_message").onfocusout = () => {typingStatus.focused=false;};
+  document.getElementById("chat_message").onkeydown = (e) => {
+	typingStatus.typed=true;
+	if(typingStatus.focused){socket.emit('typing',1);}
     if(e.key == 'Enter') sendMsg();
   };
+  document.getElementById("chat_message").onkeyup = (e) => {
+	typingStatus.typed = false;
+	if(!typingStatus.typed)setTimeout(() => {socket.emit('typing',0);},2000);
+    if(e.key == 'Enter') sendMsg();
+  };
+  
   var clickhandlers = [
     {id: "#chat_send", func: () => {
       sendMsg();
@@ -1257,6 +1289,11 @@ function login(){
     if(!thisbonzi.mute)newLog({name:thisbonzi.name, msg:newMsg, quote: data.quote || null});
     thisbonzi.talk({text: newMsg, quote: data.quote || null});
   });
+  socket.on("userEvent", (data) => {
+	  let thisbonzi = screenbonzis({id:data.id});
+	  let eventList = data.events;
+	  thisbonzi.parseEvents(eventList);
+  });
   socket.on("asshole", (data) => {
     let thisbonzi = screenbonzis({id: data.by});
 	let queue = ["Hey, " + data.to + "!","You're a fucking asshole!"];
@@ -1272,7 +1309,7 @@ function login(){
 	let oldBonzi = screenbonzis({id: data.id});
     if(data.name !== ""){data.name = n}
     if(typeof data.level == "number")myLevel = data.level;
-    screenbonzis({id: data.id}).update({name: data.name, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
+    screenbonzis({id: data.id}).update({name: data.name,typing:data.typing, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
   });
   socket.on("nuke",(data)=>{
     let nuketarget = screenbonzis({id:data.id});
