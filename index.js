@@ -107,7 +107,7 @@ let config = {
 				...e[Math.floor(Math.random()*e.length)],
 				['animation_reset'],
 			];
-			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct});
+			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct},thisSocket.user,true);
 		},
 		"fact":(thisSocket,eventData)=>{
 			if(typeof eventData != 'string')return;
