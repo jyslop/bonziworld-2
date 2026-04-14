@@ -805,6 +805,7 @@ function bonzi(colorurl,left,top,property){
 			  processArray();
 		  }
 	  };
+	  processArray();
   };
 
   var pos = {x: document.getElementById(localId).style.left, y: document.getElementById(localId).style.top};
