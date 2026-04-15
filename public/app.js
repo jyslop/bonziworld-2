@@ -226,12 +226,7 @@ socket.on('roomslist',d=>{
         `;
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
-			disconnectErr=false;
-			socket.off('disconnect');
-			listenerNames.forEach(listenName => {socket.off(listenName);});
-			resetUsers([]); 
-			login(roomObject.name); 
-			disconnectErr=true;
+			reconnect(roomObject.name);
 			//socket.on('disconnect',disconnectHandle);
 	 	};
     });
@@ -1085,13 +1080,16 @@ let disconnectErr = true;
 
 
 function reconnect(newRoom) {
-	resetUsers([]);
-
 	socket.disconnect();
-
-	socket.once("connect", () => {
-		login(newRoom);
-	});
+	let loginLoop = () => {
+		disconnectErr=false;
+		socket.off('disconnect');
+		listenerNames.forEach(listenName => {socket.off(listenName);});
+		resetUsers([]); 
+		setTimeout(() => {  login(newRoom); setTimeout(() => { if(!socket.connected)loginLoop(); },1000); },1000);
+		disconnectErr=true;
+	};
+	loginLoop();
 }
 
 let mainAudio = new Audio();
