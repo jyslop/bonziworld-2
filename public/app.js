@@ -1137,7 +1137,6 @@ let roomModify = {
 function login(newRoom){
 	if(typeof newRoom == 'undefined')newRoom=$("#login_room").val();
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
-	if(!socket.connected)socket.connect();
 	Object.keys(applets).forEach(appletName => {
 		let currentApplet = applets[appletName];
 		document.getElementById(currentApplet.buttonId).onclick = () => {
