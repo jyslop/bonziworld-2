@@ -423,11 +423,9 @@ io.on("connection", function(socket){
 			
 			let over9000 = false;
 			if(typeof skiddieWatch[socket.user.ip] == "object"){
-			    let isReconnect = skiddieWatch[socket.user.ip].previousId === userid;
- 			    if(!isReconnect) {
-    	   		    over9000 = skiddieWatch[socket.user.ip].lastLogged < config.rateLimit*5 || 
-                    skiddieWatch[socket.user.ip].instances > 2;
-  				}
+			    if(typeof skiddieWatch[socket.user.ip].lastLogged == "number"){
+					over9000 = skiddieWatch[socket.user.ip].lastLogged < config.rateLimit*5 || skiddieWatch[socket.user.ip].instances > 2;
+				}
 			}
 			if(!over9000){
 				if(typeof skiddieWatch[socket.user.ip] !== "object"){
@@ -513,7 +511,7 @@ io.on("connection", function(socket){
 					publicrooms[socket.user.roomId].users.splice(socket.user.roomIndex,1);
 					if(publicrooms[socket.user.roomId].users.length < 1)delete publicrooms[socket.user.roomId];
 					if(typeof skiddieWatch[socket.user.ip] == "object"){
-						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn)skiddieWatch[socket.user.ip].instances--;
+						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn){skiddieWatch[socket.user.ip].instances--; skiddieWatch[socket.user.ip].lastLogged=0;}
 						
 						if(skiddieWatch[socket.user.ip].instances < 1)delete skiddieWatch[socket.user.ip];
 					}
