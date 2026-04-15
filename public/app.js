@@ -1,7 +1,7 @@
 let profileList = loadArray('profiles');
 profileList = profileList == null ? [ {name:'Anonymous',color:'purple',hats:[],godmodePass:null} ] : profileList;
 let disconnectHandle = () => {};
-var socket = io(location.href);
+var socket = io(location.href,{reconnection:false});
 var first = true;
 var userAmt = 0;
 var userlist = [];
