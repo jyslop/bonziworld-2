@@ -227,10 +227,10 @@ socket.on('roomslist',d=>{
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
 			socket.off('disconnect');
-			listenerNames.forEach(listenName => {socket.off(listenName);
+			listenerNames.forEach(listenName => {socket.off(listenName);});
 			resetUsers([]); 
 			login(roomObject.name); 
-			socket.on('disconnect',disconnectHandle);
+			//socket.on('disconnect',disconnectHandle);
 	 	};
     });
 });
@@ -1369,7 +1369,10 @@ function login(newRoom){
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
   disconnectHandle =  () => {
-	setTimeout(() => {if(disconnectErr){resetUsers([]); login();}},2000);
+	setTimeout(() => {if(disconnectErr){socket.off('disconnect');
+			listenerNames.forEach(listenName => {socket.off(listenName);});
+			resetUsers([]); 
+			login(); }},2000);
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || !disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
