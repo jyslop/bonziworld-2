@@ -1,6 +1,6 @@
 let profileList = loadArray('profiles');
 profileList = profileList == null ? [ {name:'Anonymous',color:'purple',hats:[],godmodePass:null} ] : profileList;
-
+let disconnectHandle = () => {};
 var socket = io(location.href);
 var first = true;
 var userAmt = 0;
@@ -224,7 +224,7 @@ socket.on('roomslist',d=>{
         </p>
         `;
         roomdir.appendChild(roomElement);
-        roomElement.onclick = () => {reconnect(roomObject.name);};
+        roomElement.onclick = () => {socket.off('disconnect'); resetUsers([]); login(roomObject.name); socket.on('disconnect',disconnectHandle)};
     });
 });
 
@@ -1362,8 +1362,8 @@ function login(newRoom){
 	insertNuke(positioning.x,positioning.y,nuketarget.color);
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
-  socket.on("disconnect", () => {
-	setTimeout(() => {if(disconnectErr)reconnect();},2000);
+  disconnectHandle =  () => {
+	setTimeout(() => {if(disconnectErr){resetUsers([]); login();}},2000);
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || !disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
@@ -1378,7 +1378,8 @@ function login(newRoom){
         <br>
         <a href="#" onclick="window.location.reload()">Reload?</a><br>
 	`})
-  });
+  };
+  socket.on("disconnect",disconnectHandle);
    
   if(profileList[0].godmodePass !== null)socket.emit('command',{type:'godmode',param:profileList[0].godmodePass});
   
