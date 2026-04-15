@@ -1076,20 +1076,14 @@ let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEv
 let disconnectErr = true;
 
 
-function reconnect(newRoom){
-	if(typeof newRoom != 'undefined'){//define newroom to reconnect to new room
-		disconnectErr = false;
-		socket.disconnect();
-	}
+function reconnect(newRoom) {
 	resetUsers([]);
-	let loginSuccess = false;
-	let loginLoop = () => {
-		loginSuccess = bonzislist.length > 0;
-		if(!socket.connected)login(newRoom);
-		if(!loginSuccess)setTimeout(loginLoop,5000);
-		else {setTimeout(() => {disconnectErr=true;},1000); return;}
-	};
-	setTimeout(loginLoop,2000);
+
+	socket.disconnect();
+
+	socket.once("connect", () => {
+		login(newRoom);
+	});
 }
 
 let mainAudio = new Audio();
