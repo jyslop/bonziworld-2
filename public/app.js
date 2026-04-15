@@ -226,6 +226,8 @@ socket.on('roomslist',d=>{
         `;
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
+			socket.disconnect();
+			disconnectErr=false;
 			reconnect(roomObject.name);
 			//socket.on('disconnect',disconnectHandle);
 	 	};
@@ -1080,7 +1082,6 @@ let disconnectErr = true;
 
 
 function reconnect(newRoom) {
-	socket.disconnect();
 	let loginLoop = () => {
 		disconnectErr=false;
 		socket.off('disconnect');
