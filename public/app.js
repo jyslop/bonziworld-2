@@ -1107,6 +1107,10 @@ socket.on("err",(errorTxt)=>alert(errorTxt));
 	  typed:false,
 	  timeout:undefined
   };
+let roomModify = {
+	public:false	
+};
+
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -1272,6 +1276,15 @@ function login(){
     }
     if(data.isOwner){
       $("#room_owner").show();
+	  $('#room_toggle').css({'display':'block'});
+	  $('#room_toggle').click(() => {
+		  roomModify.public=!roomModify.public;
+
+		  let s = 'off';
+		  if(roomModify.public)s='on';
+
+		  socket.emit('command',{type:'roompublic',param:s});
+	});
     }
   });
   socket.on("userlist", (data) => {
