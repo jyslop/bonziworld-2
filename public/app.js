@@ -226,10 +226,12 @@ socket.on('roomslist',d=>{
         `;
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
+			disconnectErr=false;
 			socket.off('disconnect');
 			listenerNames.forEach(listenName => {socket.off(listenName);});
 			resetUsers([]); 
 			login(roomObject.name); 
+			disconnectErr=true;
 			//socket.on('disconnect',disconnectHandle);
 	 	};
     });
