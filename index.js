@@ -423,9 +423,11 @@ io.on("connection", function(socket){
 			
 			let over9000 = false;
 			if(typeof skiddieWatch[socket.user.ip] == "object"){
-				if(typeof skiddieWatch[socket.user.ip].lastLogged == "number"){
-					over9000 = skiddieWatch[socket.user.ip].lastLogged < config.rateLimit*5 || skiddieWatch[socket.user.ip].instances > 2;
-				}
+			    let isReconnect = skiddieWatch[socket.user.ip].previousId === userid;
+ 			    if(!isReconnect) {
+    	   		    over9000 = skiddieWatch[socket.user.ip].lastLogged < config.rateLimit*5 || 
+                    skiddieWatch[socket.user.ip].instances > 2;
+  				}
 			}
 			if(!over9000){
 				if(typeof skiddieWatch[socket.user.ip] !== "object"){
