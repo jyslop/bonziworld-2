@@ -210,7 +210,7 @@ new Dialog({title:'Room List',width:300,height:300,html:`
 `});
 socket.emit('command',{type:'getrooms',param:''});
 socket.on('roomslist',d=>{
-	document.getElementById('room_create').onclick = () => {myRoom = document.getElementById('room_custom').value); socket.disconnect();};
+	document.getElementById('room_create').onclick = () => {myRoom = document.getElementById('room_custom').value);disconnectErr=false; socket.disconnect();};
     let roomdir = document.getElementById('roomdir');
     roomdir.innerHTML='';
     d.forEach(roomObject => {
@@ -227,6 +227,7 @@ socket.on('roomslist',d=>{
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
 			myRoom = roomObject.name;
+			disconnectErr=false;
 			socket.disconnect();
 			//socket.on('disconnect',disconnectHandle);
 	 	};
@@ -1373,7 +1374,7 @@ function login(newRoom){
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
   disconnectHandle =  () => {
-	setTimeout(() => {if(disconnectErr){reconnect(myRoom);} },2000);
+	setTimeout(() => {reconnect(myRoom); },2000);
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || !disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
