@@ -210,7 +210,7 @@ new Dialog({title:'Room List',width:300,height:300,html:`
 `});
 socket.emit('command',{type:'getrooms',param:''});
 socket.on('roomslist',d=>{
-	document.getElementById('room_create').onclick = () => {socket.disconnect(); reconnect(document.getElementById('room_custom').value);};
+	document.getElementById('room_create').onclick = () => {myRoom = document.getElementById('room_custom').value); socket.disconnect();};
     let roomdir = document.getElementById('roomdir');
     roomdir.innerHTML='';
     d.forEach(roomObject => {
@@ -226,8 +226,8 @@ socket.on('roomslist',d=>{
         `;
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
+			myRoom = roomObject.name;
 			socket.disconnect();
-			let myRoom = roomObject.name;
 			//socket.on('disconnect',disconnectHandle);
 	 	};
     });
