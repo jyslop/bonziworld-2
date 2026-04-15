@@ -344,6 +344,7 @@ function hasUser(roomId,guid){
 }
 function eventRoom(eventName,messageData,originalUser,displayLocal=false){
 	let currentRoom = publicrooms[originalUser.roomId];
+	if(typeof currentRoom != 'object')return;
 	if(currentRoom.users.some(r => r.id == originalUser.id)){
 		currentRoom.users.forEach(fullUser => {
 			if(fullUser.socketId == originalUser.socketId){
