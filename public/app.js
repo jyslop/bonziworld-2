@@ -12,6 +12,7 @@ var myLevel = 1;
 var bonziZCounter = 100;
 var replyTarget = null;
 
+let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
 function setCookie(cname,cvalue,exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -224,7 +225,13 @@ socket.on('roomslist',d=>{
         </p>
         `;
         roomdir.appendChild(roomElement);
-        roomElement.onclick = () => {socket.off('disconnect'); resetUsers([]); login(roomObject.name); socket.on('disconnect',disconnectHandle)};
+        roomElement.onclick = () => {
+			socket.off('disconnect');
+			listenerNames.forEach(listenName => {socket.off(listenName);
+			resetUsers([]); 
+			login(roomObject.name); 
+			socket.on('disconnect',disconnectHandle);
+	 	};
     });
 });
 
@@ -1072,7 +1079,6 @@ function resetUsers(userlist) {
     }
     updateUsers();
 }
-let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
 let disconnectErr = true;
 
 
