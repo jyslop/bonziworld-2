@@ -201,13 +201,15 @@ let applets = {
 		buttonId:"rooms_view",
 		open:false,
 		onpress:()=>{
+			if(document.body.innerHTML.includes('<div id="roomdir"'))return;
 			socket.off('roomslist');
 new Dialog({title:'Room List',width:300,height:300,html:`
     <div id="roomdir" style="width:98%;height:85%;overflow-x:hidden;overflow-y:scroll;">Loading...</div><br>
-    <input type="text" placeholder="New room ID (optional)" id="room_custom"><button id="room_create">Create Room</button>
+    <input type="text" placeholder="Type room ID (optional)" id="room_custom"><button id="room_create">Visit Room</button>
 `});
 socket.emit('command',{type:'getrooms',param:''});
 socket.on('roomslist',d=>{
+	document.getElementById('room_create').onclick = () => {reconnect(document.getElementById('room_custom').value);};
     let roomdir = document.getElementById('roomdir');
     roomdir.innerHTML='';
     d.forEach(roomObject => {
