@@ -164,6 +164,14 @@ let config = {
 				}
 			}
 		},
+		"roompublic":(thisSocket,eventData)=>{
+			if(typeof eventData != 'string')return;
+			let currentRoom = publicrooms[thisSocket.user.roomId];
+			if(currentRoom.owner == thisSocket.user.id){
+				if(eventData == 'on')publicrooms[thisSocket.user.roomId].isPublic=true;
+				if(eventData == 'off')publicrooms[thisSocket.user.roomId].isPublic=false;
+			}
+		},
 		"modname":(thisSocket,eventData)=>{
 			if(thisSocket.user.level > 1 && typeof eventData == "string"){
 				let parts = eventData.split(" ");
