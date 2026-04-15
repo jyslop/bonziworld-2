@@ -1085,7 +1085,7 @@ function reconnect(newRoom){
 		login(newRoom);
 		loginSuccess = bonzislist.length > 0;
 		if(!loginSuccess)setTimeout(loginLoop,5000);
-		else {disconnectErr=true; return;}
+		else {setTimeout(() => {disconnectErr=true;},1000); return;}
 	};
 	setTimeout(loginLoop,2000);
 }
@@ -1383,8 +1383,8 @@ function login(newRoom){
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
   socket.on("disconnect", () => {
-	setTimeout(() => {reconnect();},2000);
-	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || disconnectErr)return;
+	setTimeout(() => {if(disconnectErr)reconnect();},2000);
+	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || !disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
 		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
