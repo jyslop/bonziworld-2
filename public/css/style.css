@@ -177,7 +177,9 @@ background-image: url(/img/bonzi/bubble_point.png)
       background-size: cover;user-select:none;
       filter: drop-shadow(1px 1px 5px rgba(0,0,0,0.6))
   }
-
+.icon:hover {
+    cursor: pointer;
+}
   
 
   #brk {
