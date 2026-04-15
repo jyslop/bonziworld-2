@@ -1123,22 +1123,6 @@ let musicList = [];
 						
 					};
 socket.on("err",(errorTxt)=>alert(errorTxt));
- socket.on("disconnect", () => {
-	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
-    new Dialog({title:'Error',html:`
-		<img src="./img/error/logo.png"><br>
-		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
-		<br>
-        Nah, but seriously there was an error and you got disconnected from the server. 
-		Chances are, your internet just died out for a brief moment or your device went to sleep. 
-		Otherwise the server just screwed up.<br>
-        <br>
-        Try and reload the page. If that doesn't work and your internet is okay, then panic. 
-		We'll probably be back up Soon™ though.<br>
-        <br>
-        <a href="#" onclick="window.location.reload()">Reload?</a><br>
-	`})
-  });
   let typingStatus = {
 	  focused:false,
 	  typed:false,
