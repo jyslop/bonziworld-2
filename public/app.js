@@ -210,7 +210,7 @@ new Dialog({title:'Room List',width:300,height:300,html:`
 `});
 socket.emit('command',{type:'getrooms',param:''});
 socket.on('roomslist',d=>{
-	document.getElementById('room_create').onclick = () => {reconnect(document.getElementById('room_custom').value);};
+	document.getElementById('room_create').onclick = () => {socket.disconnect(); reconnect(document.getElementById('room_custom').value);};
     let roomdir = document.getElementById('roomdir');
     roomdir.innerHTML='';
     d.forEach(roomObject => {
@@ -227,8 +227,7 @@ socket.on('roomslist',d=>{
         roomdir.appendChild(roomElement);
         roomElement.onclick = () => {
 			socket.disconnect();
-			disconnectErr=false;
-			reconnect(roomObject.name);
+			let myRoom = roomObject.name;
 			//socket.on('disconnect',disconnectHandle);
 	 	};
     });
@@ -237,7 +236,7 @@ socket.on('roomslist',d=>{
 		}
 	}
 };
-
+let myRoom = 'default';
 function clampBonziPosition(x, y) {
 	var xmax = $(window).width() - 200;
 	var ymax = $(window).height() - 160 - 30;
@@ -1374,7 +1373,7 @@ function login(newRoom){
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
   disconnectHandle =  () => {
-	setTimeout(() => {if(disconnectErr){reconnect();} },2000);
+	setTimeout(() => {if(disconnectErr){reconnect(myRoom);} },2000);
 	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || !disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
