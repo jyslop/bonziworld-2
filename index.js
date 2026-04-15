@@ -509,6 +509,7 @@ io.on("connection", function(socket){
 				socket.on("disconnect", () => {
 					eventRoom('leave',{id:socket.user.id},socket.user,true);
 					publicrooms[socket.user.roomId].users.splice(socket.user.roomIndex,1);
+					if(publicrooms[socket.user.roomId].users.length < 1)delete publicrooms[socket.user.roomId];
 					if(typeof skiddieWatch[socket.user.ip] == "object"){
 						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn)skiddieWatch[socket.user.ip].instances--;
 						
