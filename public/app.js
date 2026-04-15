@@ -197,6 +197,7 @@ let applets = {
 			`});
 		}
 	},
+	"roomsview"
 };
 
 function clampBonziPosition(x, y) {
@@ -1117,7 +1118,8 @@ let roomModify = {
 	public:false	
 };
 
-function login(newRoom=$("#login_room").val()){
+function login(newRoom){
+	if(typeof newRoom == 'undefined')newRoom=$("#login_room").val();
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
 	Object.keys(applets).forEach(appletName => {
