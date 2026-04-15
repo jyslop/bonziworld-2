@@ -179,11 +179,11 @@ let applets = {
 		},
 	},
 	"mediaupload":{
-	buttonId:"media_upload",
-	open:false,
-	onpress:()=>{
-		uploadPopup();
-	},
+		buttonId:"media_upload",
+		open:false,
+		onpress:()=>{
+			uploadPopup();
+		},
 	},
 	"bonzilog":{
 		buttonId:"bonzi_log",
@@ -197,7 +197,37 @@ let applets = {
 			`});
 		}
 	},
-	"roomsview"
+	"roomsview":{
+		buttonId:"rooms_view",
+		open:false,
+		onpress:()=>{
+			socket.off('roomslist');
+new Dialog({title:'Room List',width:300,height:300,html:`
+    <div id="roomdir" style="width:98%;height:85%;overflow-x:hidden;overflow-y:scroll;">Loading...</div><br>
+    <input type="text" placeholder="New room ID (optional)" id="room_custom"><button id="room_create">Create Room</button>
+`});
+socket.emit('command',{type:'getrooms',param:''});
+socket.on('roomslist',d=>{
+    let roomdir = document.getElementById('roomdir');
+    roomdir.innerHTML='';
+    d.forEach(roomObject => {
+        let roomElement = document.createElement('button');
+        roomElement.innerHTML = `
+        <img src="./img/desktop/icons/room.png" width="32" height="32">
+        <hr>
+        <p>
+                Room ID: <span style="font-weight:bold;font-size:18px;">${roomObject.name}</span>
+            <br>
+            <span style="color:green;font-size:16px;">${roomObject.users} Users</span>
+        </p>
+        `;
+        roomdir.appendChild(roomElement);
+        roomElement.onclick = () => {reconnect(roomObject.name);};
+    });
+});
+
+		}
+	}
 };
 
 function clampBonziPosition(x, y) {
