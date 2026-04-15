@@ -1131,8 +1131,8 @@ function login(){
   socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
 
 
-  document.getElementById("chat_message").onfocusin = () => {typingStatus.focused=true;};
-  document.getElementById("chat_message").onfocusout = () => {typingStatus.focused=false;};
+  document.getElementById("chat_message").onfocus = () => {typingStatus.focused=true;};
+  document.getElementById("chat_message").onblur = () => {typingStatus.focused=false;};
   document.getElementById("chat_message").onkeydown = (e) => {
 	if(typingStatus.focused){
 		if(!typingStatus.typed)socket.emit('typing',1);
