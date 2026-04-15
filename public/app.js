@@ -1082,7 +1082,6 @@ function reconnect(newRoom){
 		socket.disconnect();
 	}
 	resetUsers([]);
-	socket.connect();
 	let loginSuccess = false;
 	let loginLoop = () => {
 		loginSuccess = bonzislist.length > 0;
@@ -1136,6 +1135,7 @@ let roomModify = {
 };
 
 function login(newRoom){
+	socket.connect();
 	if(typeof newRoom == 'undefined')newRoom=$("#login_room").val();
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	Object.keys(applets).forEach(appletName => {
