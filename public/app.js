@@ -1085,7 +1085,7 @@ function reconnect(newRoom){
 		login(newRoom);
 		loginSuccess = bonzislist.length > 0;
 		if(!loginSuccess)setTimeout(loginLoop,5000);
-		else disconnectErr=true;
+		else {disconnectErr=true; return;}
 	};
 	setTimeout(loginLoop,2000);
 }
@@ -1170,7 +1170,10 @@ function login(newRoom){
 	};
   $("#login_card").hide();
   $("#login_load").show();
-  socket.emit("login",{name: $("#login_name").val(), room:newRoom});
+ socket.emit("login", { 
+    name: String($("#login_name").val()).substring(0, 64), 
+    room: typeof newRoom === 'string' ? newRoom.substring(0, 64) : ""
+});
 
 
   document.getElementById("chat_message").onfocus = () => {typingStatus.focused=true;};
