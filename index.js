@@ -408,9 +408,9 @@ io.on("connection", function(socket){
 	};
 	
 	socket.on("login", (data) => {
-		 socket.off('msg');
-    	socket.off('typing');
-    	socket.off('command');
+		    socket.removeAllListeners('msg');
+    socket.removeAllListeners('typing');
+    socket.removeAllListeners('command');
 		if(isFucked(socket.user.ip)){
 			socket.emit("err","No proxies allowed right now");
 			return;
