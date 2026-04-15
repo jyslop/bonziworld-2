@@ -1102,6 +1102,11 @@ socket.on("err",(errorTxt)=>alert(errorTxt));
         <a href="#" onclick="window.location.reload()">Reload?</a><br>
 	`})
   });
+  let typingStatus = {
+	  focused:false,
+	  typed:false,
+	  timeout:undefined
+  };
 function login(){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
@@ -1125,20 +1130,19 @@ function login(){
   $("#login_load").show();
   socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
 
-  let typingStatus = {
-	  focused:false,
-	  typed:false,
-  };
+
   document.getElementById("chat_message").onfocusin = () => {typingStatus.focused=true;};
   document.getElementById("chat_message").onfocusout = () => {typingStatus.focused=false;};
   document.getElementById("chat_message").onkeydown = (e) => {
-	typingStatus.typed=true;
-	if(typingStatus.focused){socket.emit('typing',1);}
+	if(typingStatus.focused){
+		if(!typingStatus.typed)socket.emit('typing',1);
+		typingStatus.typed=true;
+		if(typeof typingStatus.timeout != 'undefined'){clearTimeout(typingStatus.timeout); typingStatus.timeout = undefined;}
+	}
     if(e.key == 'Enter') sendMsg();
   };
   document.getElementById("chat_message").onkeyup = (e) => {
-	typingStatus.typed = false;
-	if(!typingStatus.typed)setTimeout(() => {socket.emit('typing',0);},2000);
+	typingStatus.timeout = setTimeout(() => {socket.emit('typing',0);typingStatus.typed=false;},2000);
     if(e.key == 'Enter') sendMsg();
   };
   
