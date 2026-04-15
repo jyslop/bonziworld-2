@@ -330,7 +330,6 @@ $(window).load(function(){
     $("#login_go").click(login);
     $("#login_name, #login_room").keypress(function(e) {
       if(e.which == 13) {
-        socket.emit("login", {name: $("#login_name").val(), room: $("#login_room").val()});
         login();
       }
     });
@@ -1075,6 +1074,8 @@ function resetUsers(userlist) {
 }
 let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
 let disconnectErr = true;
+
+
 function reconnect(newRoom){
 	if(typeof newRoom != 'undefined'){//define newroom to reconnect to new room
 		disconnectErr = false;
@@ -1084,8 +1085,8 @@ function reconnect(newRoom){
 	socket.connect();
 	let loginSuccess = false;
 	let loginLoop = () => {
-		login(newRoom);
 		loginSuccess = bonzislist.length > 0;
+		if(!socket.connected)login(newRoom);
 		if(!loginSuccess)setTimeout(loginLoop,5000);
 		else {setTimeout(() => {disconnectErr=true;},1000); return;}
 	};
