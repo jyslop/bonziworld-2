@@ -1041,14 +1041,20 @@ function resetUsers(userlist) {
     updateUsers();
 }
 let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
-function reconnect(){
+let disconnectErr = true;
+function reconnect(newRoom){
+	if(typeof newRoom != 'undefined'){//define newroom to reconnect to new room
+		disconnectErr = false;
+		socket.disconnect();
+	}
 	resetUsers([]);
 	socket.connect();
 	let loginSuccess = false;
 	let loginLoop = () => {
-		login();
+		login(newRoom);
 		loginSuccess = bonzislist.length > 0;
 		if(!loginSuccess)setTimeout(loginLoop,5000);
+		else disconnectErr=true;
 	};
 	setTimeout(loginLoop,2000);
 }
@@ -1111,7 +1117,7 @@ let roomModify = {
 	public:false	
 };
 
-function login(){
+function login(newRoom=$("#login_room").val()){
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
 	if(!socket.connected)socket.connect();
 	Object.keys(applets).forEach(appletName => {
@@ -1132,7 +1138,7 @@ function login(){
 	};
   $("#login_card").hide();
   $("#login_load").show();
-  socket.emit("login",{name: $("#login_name").val(), room: $("#login_room").val()});
+  socket.emit("login",{name: $("#login_name").val(), room:newRoom});
 
 
   document.getElementById("chat_message").onfocus = () => {typingStatus.focused=true;};
@@ -1342,7 +1348,8 @@ function login(){
 	setTimeout(() => {nuketarget.leave(true);},1);
   });
   socket.on("disconnect", () => {
-	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error'))return;
+	setTimeout(() => {reconnect();},2000);
+	if(document.body.innerHTML.includes('<h4>BonziWORLD.exe has encountered an error') || disconnectErr)return;
     new Dialog({title:'Error',html:`
 		<img src="./img/error/logo.png"><br>
 		<h4>BonziWORLD.exe has encountered an error and needs to close.</h4>
