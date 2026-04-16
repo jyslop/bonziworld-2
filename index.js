@@ -451,7 +451,11 @@ io.on("connection", function(socket){
 				eventRoom("newuser",publicUser,socket.user);
 
 				let matchingIds = publicrooms[data.room].owner == socket.user.id;
-				socket.emit("room",{isPublic:true,isOwner:matchingIds,id:socket.user.roomId});
+				socket.emit("room",{
+					isPublic:publicrooms[data.room].isPublic,
+					isOwner:matchingIds,
+					id:socket.user.roomId
+				});
 				socket.emit("userlist",{list:roomUsers});
 				
 				socket.user.loggedIn=true;
