@@ -212,26 +212,31 @@ socket.emit('command',{type:'getrooms',param:''});
 socket.on('roomslist',d=>{
 	document.getElementById('room_create').onclick = () => {myRoom = document.getElementById('room_custom').value;disconnectErr=false; socket.disconnect();};
     let roomdir = document.getElementById('roomdir');
-    roomdir.innerHTML='';
-    d.forEach(roomObject => {
-        let roomElement = document.createElement('button');
-        roomElement.innerHTML = `
-        <img src="./img/desktop/icons/room.png" width="32" height="32">
-        <hr>
-        <p>
-                Room ID: <span style="font-weight:bold;font-size:18px;">${roomObject.name}</span>
-            <br>
+    let initLoop = () => {
+		
+		roomdir.innerHTML='';
+	    d.forEach(roomObject => {
+    	    let roomElement = document.createElement('button');
+  		      roomElement.innerHTML = `
+       	 	<img src="./img/desktop/icons/room.png" width="32" height="32">
+       	 	<hr>
+       		 <p>
+        	        Room ID: <span style="font-weight:bold;font-size:18px;">${roomObject.name}</span>
+	            <br>
             <span style="color:green;font-size:16px;">${roomObject.users} Users</span>
-        </p>
-        `;
-        roomdir.appendChild(roomElement);
-        roomElement.onclick = () => {
-			myRoom = roomObject.name;
-			disconnectErr=false;
-			socket.disconnect();
-			//socket.on('disconnect',disconnectHandle);
-	 	};
-    });
+	        </p>
+	        `;
+    	    roomdir.appendChild(roomElement);
+	        roomElement.onclick = () => {
+				myRoom = roomObject.name;
+				disconnectErr=false;
+				socket.disconnect();
+				//socket.on('disconnect',disconnectHandle);
+		 	};
+	    });
+	};
+	initLoop();
+	let s = setInterval(() => {if(document.body.innerHTML.includes('<div id="roomdir"')){initLoop();}else{clearInterval(s);}},5000);
 });
 
 		}
