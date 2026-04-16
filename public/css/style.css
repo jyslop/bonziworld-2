@@ -303,17 +303,18 @@ background-image: url(/img/bonzi/bubble_point.png)
 }
 
 
- #chat_message_cont {
-    width: 90%;
+#chat_message_cont {
+    width: calc(100% - 200px);
     height: 30px;
     position: relative;
     /* top: 4px; */
-    left: 60px;
+    left: 120px;
     display: flex;
-    justify-content: center;
+    /* justify-content: center; */
     align-items: center;
     z-index: -1;
 }
+#chat_message {width:100%;}
   #room_info {
   color: rgba(255, 255, 255, 0.5);
   font-weight: normal;
