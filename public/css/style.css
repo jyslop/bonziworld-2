@@ -39,7 +39,7 @@
   #content {
     width: 100%;
     height: 100%;
-    background-color: rgba(109, 51, 160, 0.67);
+    background-color: rgba(109, 51, 160, 0.92);
     background-image: url("../img/desktop/logo.png"), url("../img/desktop/bg.png");
     background-position: top left, center;
     background-repeat: no-repeat; 
@@ -577,7 +577,7 @@ p {
     background: white;
     z-index: 99;
     left: 0px;
-    bottom: 28px;
+    bottom: 31px;
     display: none;
     flex-direction: column;
     z-index: 9999;
