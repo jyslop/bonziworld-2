@@ -236,7 +236,7 @@ socket.on('roomslist',d=>{
 	    });
 	};
 	initLoop();
-	let s = setInterval(() => {if(document.body.innerHTML.includes('<div id="roomdir"')){initLoop();}else{clearInterval(s);}},5000);
+	let s = setInterval(() => {if(document.body.innerHTML.includes('<div id="roomdir"')){socket.emit('command',{type:'getrooms',param:''});}else{clearInterval(s);}},5000);
 });
 
 		}
