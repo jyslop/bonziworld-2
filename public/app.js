@@ -234,9 +234,11 @@ socket.on('roomslist',d=>{
 				//socket.on('disconnect',disconnectHandle);
 		 	};
 	    });
+		setTimeout(() => {
+			if(document.body.innerHTML.includes('<div id="roomdir"'))socket.emit('command',{type:'getrooms',param:''});
+		},5000);
 	};
 	initLoop();
-	let s = setInterval(() => {if(document.body.innerHTML.includes('<div id="roomdir"')){socket.emit('command',{type:'getrooms',param:''});}else{clearInterval(s);}},5000);
 });
 
 		}
