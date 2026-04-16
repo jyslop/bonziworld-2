@@ -204,7 +204,7 @@ let applets = {
 		onpress:()=>{
 			if(document.body.innerHTML.includes('<div id="roomdir"'))return;
 			socket.off('roomslist');
-new Dialog({title:'Room List',width:300,height:300,html:`
+let roomWindow = new Dialog({title:'Room List',width:300,height:300,html:`
     <div id="roomdir" style="width:98%;height:85%;overflow-x:hidden;overflow-y:scroll;">Loading...</div><br>
     <input type="text" placeholder="Type room ID (optional)" id="room_custom"><button id="room_create">Visit Room</button>
 `});
@@ -231,6 +231,7 @@ socket.on('roomslist',d=>{
 				myRoom = roomObject.name;
 				disconnectErr=false;
 				socket.disconnect();
+				roomWindow.element.remove();
 				//socket.on('disconnect',disconnectHandle);
 		 	};
 	    });
