@@ -1307,6 +1307,7 @@ function login(newRoom){
     $("#room_public").hide();
     $("#room_private").hide();
     $("#room_owner").hide();
+	$("#room_id").text(data.room);
     if(data.isPublic){
       $("#room_public").show();
       $("#room_id").text(data.room);
