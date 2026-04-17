@@ -1309,7 +1309,7 @@ function login(newRoom){
     $("#room_owner").hide();
     if(data.isPublic){
       $("#room_public").show();
-      $(".room_id").text(data.room);
+      $("#room_id").text(data.room);
     } else {
       $("#room_private").show();
       $("#room_id").text(data.room);
