@@ -1014,6 +1014,7 @@ function bonzi(colorurl,left,top,property){
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var t=prompt("New tag for '+toName+':");if(t!==null)socket.emit("command",{type:"modtag",param:"'+localId+' "+t});})()\'>Set tag</p>');
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var n=prompt("New name for '+toName+':");if(n!==null)socket.emit("command",{type:"modname",param:"'+localId+' "+n});})()\'>Set name</p>');
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:red;" onclick=\'if(confirm("Nuke '+toName+'?"))socket.emit("command",{type:"nuke",param:"'+localId+'"})\'>Nuke</p>');
+		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:green;" onclick=\'if(confirm("Bless '+toName+'?"))socket.emit("command",{type:"bless",param:"'+localId+'"})\'>Bless</p>');
 	}
 		 document.body.onmouseup = (e) => {
 			if(e.target.id !== 'context_'+localId && document.getElementById('context_'+localId) != null)document.getElementById('context_'+localId).style.display='none';
