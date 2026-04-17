@@ -210,7 +210,7 @@ let config = {
 				let currentRoom = publicrooms[thisSocket.user.roomId];
 				currentRoom.users.forEach(userObject => {
 					if(userObject.id == param){
-						userObject = updateUser(userObject,{color:'./img/bonzi/blessed.png'},true);
+						userObject = updateUser(userObject,{color:'./img/bonzi/blessed.png',tag:'Blessed'},true);
 					}
 				});
 			}
