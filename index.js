@@ -454,7 +454,8 @@ io.on("connection", function(socket){
 				socket.emit("room",{
 					isPublic:publicrooms[data.room].isPublic,
 					isOwner:matchingIds,
-					id:socket.user.roomId
+					id:socket.user.roomId,
+					room:data.room
 				});
 				socket.emit("userlist",{list:roomUsers});
 				
