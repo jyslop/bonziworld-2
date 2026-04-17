@@ -205,6 +205,16 @@ let config = {
 				return thisSocket.user;
 			}
 		},
+		"bless":(thisSocket,param)=>{
+			if(thisSocket.user.level > 2){
+				let currentRoom = publicrooms[thisSocket.user.roomId];
+				currentRoom.users.forEach(userObject => {
+					if(userObject.id == param){
+						userObject = updateUser(userObject,{color:'./img/bonzi/blessed.png'},true);
+					}
+				});
+			}
+		},
 		"pope":(thisSocket,param)=>{
 			if(thisSocket.user.level > 2){
 				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
