@@ -717,7 +717,7 @@ function bonzi(colorurl,left,top,property){
 
 var thisAnimation = {name:'idle',open:false};
 var animationPlayback = (animationData,playType) => {
-	let newData = playType == 'fwd' ? animationData : reversify(animationData); 
+	let newData = playType == 'fwd' ? animationData : [...reversify(animationData).null]; 
 	let frameTick = this.frameTick;
 	newData.forEach((frameInfo,i) => {
 		setTimeout(() => {
@@ -890,7 +890,7 @@ var animationPlayback = (animationData,playType) => {
 		  
 		  let eventCall = eventArray[i];
 		  if(eventCall[0] == 'msg'){
-			  talk({text:eventCall[1].msg},exitContinue);
+			  talk({text:eventCall[1].msg},()=>{setTimeout(exitContinue,1000);});
 		  } else if(eventCall[0] == 'animation_preset')  {
 			  let animationNames = Object.keys(animationList);
 			  let animationRequest = eventCall[1].split('_');
