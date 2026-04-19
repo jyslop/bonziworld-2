@@ -29,8 +29,8 @@ function markupify(text){
 		'--':{pair:['<del>','</del'],open:false},
 		'%%':{pair:['<marquee>','</marquee>'],open:false},
 	};
-	let keysList = Object.keys(keys);
-	while(keysList.some(r => text.includes(r))){
+	let keyList = Object.keys(keys);
+	while(keyList.some(r => text.includes(r))){
 		keyList.forEach(keyName => {
 			if(keys[keyName].open){
 				text = text.replace(keyName,keys[keyName].pair[1]);
@@ -690,7 +690,17 @@ function bonzi(colorurl,left,top,property){
 		let newY = (height*frameRow)-height;
 		
 		draw(newX,newY);
+	};
+var animationList = {
+	"praise":{
+		"fwd":[],
+		"back":[]
 	}
+};
+var thisAnimation = "idle";
+var animationPlayback = (animationData) => {
+	
+};
   var animate = (properties) => {
     if(isStaticImage){
       draw(0,0);
@@ -748,6 +758,7 @@ function bonzi(colorurl,left,top,property){
   }
 	let thisName = property.name;
 	this.name = thisName;
+  
   var talk = (properties,onendCallback) => {
 	 
     if(this.mute == true){
