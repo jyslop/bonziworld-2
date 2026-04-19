@@ -717,7 +717,7 @@ function bonzi(colorurl,left,top,property){
 
 var thisAnimation = {name:'idle',open:false};
 var animationPlayback = (animationData,playType) => {
-	let newData = playType == 'fwd' ? animationData : [...reversify(animationData).null]; 
+	let newData = playType == 'fwd' ? animationData : [...reversify(animationData),null]; 
 	let frameTick = this.frameTick;
 	newData.forEach((frameInfo,i) => {
 		setTimeout(() => {
