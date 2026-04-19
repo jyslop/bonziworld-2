@@ -682,3 +682,26 @@ button:active {
     height: 1rem;
     vertical-align: bottom;
 }
+
+@keyframes md_rainbow {
+	from{filter:hue-rotate(0deg);}
+	to{filter:hue-rotate(360deg);}
+}
+.md-italic {
+	font-style:italic;
+}
+.md-bold {
+	font-weight:bold;
+}
+.md-rainbow {
+	color:red;
+	animation:md_rainbow 4s linear infinite;
+}
+.md-large {
+	font-size:30px;
+}
+.md-code {
+	background:black;
+	color:white;
+	font-family:monospace;
+}
