@@ -32,9 +32,17 @@ function markupify(text,removeMarkupze=false){
 	let keyList = Object.keys(keys);
 	while(keyList.some(r => text.includes(r))){
 		keyList.forEach(keyName => {
-			let pairResult = removeMarkupze ? '' : keys[keyName].pair[0];
-			pairResult = keys[keyName].open ? keys[keyName].pair[1] : pairResult;
-		    keys[keyName].open = !keys[keyName].open;
+			if(removeMarkupze){
+				text = text.replaceAll(keyName,'')
+			} else {
+				if(keys[keyName].open){
+					text = text.replace(keyName,keys[keyName].pair[1]);
+				} else {
+					text = text.replace(keyName,keys[keyName].pair[0]);
+				}
+				keys[keyName].open = !keys[keyName].open;
+			}
+		    
 		});
 	}
 
