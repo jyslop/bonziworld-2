@@ -868,7 +868,6 @@ var animationPlayback = (animationData,playType) => {
   this.draw = draw;
   this.talk = talk;
   this.update = update;
-  this.joke = joke;
   this.parseEvents = (eventArray) => {
 	  let presetFrames = {
 		  "shrug":{
