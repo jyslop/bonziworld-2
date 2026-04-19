@@ -19,7 +19,7 @@ function setCookie(cname,cvalue,exdays) {
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-function markupify(text){
+function markupify(text,removeMarkupze=false){
 	let keys = {
 		'**':{pair:['<div class="md-bold">','</div>'],open:false},
 		'~~':{pair:['<div class="md-italics">','</div>'],open:false},
@@ -32,13 +32,9 @@ function markupify(text){
 	let keyList = Object.keys(keys);
 	while(keyList.some(r => text.includes(r))){
 		keyList.forEach(keyName => {
-			if(keys[keyName].open){
-				text = text.replace(keyName,keys[keyName].pair[1]);
-				 keys[keyName].open = false;
-			} else {
-				text = text.replace(keyName,keys[keyName].pair[0]);
-				keys[keyName].open = true;
-			}
+			let pairResult = removeMarkupze ? '' : keys[keyName].pair[0];
+			pairResult = keys[keyName].open ? keys[keyName].pair[1] : pairResult;
+		    keys[keyName].open = !keys[keyName].open;
 		});
 	}
 
@@ -773,6 +769,7 @@ var animationPlayback = (animationData) => {
     }
 	properties.text = properties.text.replaceAll('{NAME}',thisName)
 		.replaceAll('{COLOR}',thisColor);
+	let originalText = markupify(properties.text,true);
 	properties.text = markupify(properties.text)
     chatContent += properties.text;
     $("#chat_" + localId).html(chatContent);
@@ -815,16 +812,6 @@ var animationPlayback = (animationData) => {
       currentHats = properties.hats;
       drawHats();
     }
-  }
-  var joke = (queue) => {
-    var jokeopen = [
-      {jokeloop: () => {
-       socket.emit("msg", {msg: "Yeah, of course {NAME} wants me to tell a joke."});
-        setTimeout(() => {socket.emit("msg",{msg: "Haha, look at the stupid {COLOR} monkey telling jokes!"});},5700)
-      }}
-    ];
-
-    
   }
   this.leave = (instant=false) => {
 		let leaveFrames = [
