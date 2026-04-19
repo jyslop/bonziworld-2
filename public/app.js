@@ -19,6 +19,31 @@ function setCookie(cname,cvalue,exdays) {
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
+function markupify(text){
+	let keys = {
+		'**':{pair:['<div class="md-bold">','</div>'],open:false},
+		'~~':{pair:['<div class="md-italics">','</div>'],open:false},
+		'$r$':{pair:['<div class="md-rainbow">','</div>'],open:false},
+		'``':{pair:['<div class="md-code">','</div>'],open:false},
+		'__':{pair:['<u>','</u>'],open:false},
+		'--':{pair:['<del>','</del'],open:false},
+		'%%':{pair:['<marquee>','</marquee>'],open:false},
+	};
+	let keysList = Object.keys(keys);
+	while(keysList.some(r => text.includes(r))){
+		keyList.forEach(keyName => {
+			if(keys[keyName].open){
+				text = text.replace(keyName,keys[keyName].pair[1]);
+				 keys[keyName].open = false;
+			} else {
+				text = text.replace(keyName,keys[keyName].pair[0]);
+				keys[keyName].open = true;
+			}
+		});
+	}
+
+	return text;
+}
 class Notify {
     constructor(properties={title:"Alert",icon:"./img/desktop/infobubble.png",body:"Empty",parent:'info_icon'}){
         properties.title = properties.title || "Alert";
@@ -589,6 +614,7 @@ function bonzi(colorurl,left,top,property){
 	let urlNames = {};
 	let urlArrays = Object.keys(colorCache).map(r => {urlNames[colorCache[r]] = r; return colorCache[r];});
   this.color = urlArrays.some(r => r == colorurl || r.includes(colorurl)) ? urlNames[colorurl] : colorurl;
+  let thisColor = this.color;
   var width = 200;
   var height = 160;
   var rows = 21;
@@ -720,6 +746,8 @@ function bonzi(colorurl,left,top,property){
       }
     }
   }
+	let thisName = property.name;
+	this.name = thisName;
   var talk = (properties,onendCallback) => {
 	 
     if(this.mute == true){
@@ -732,36 +760,25 @@ function bonzi(colorurl,left,top,property){
     if(properties.quote && properties.quote.name && properties.quote.msg){
       chatContent += '<div style="border-left:3px solid #888;padding:2px 5px;margin-bottom:4px;background:rgba(0,0,0,0.07);font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;"><b>' + properties.quote.name + ':</b> ' + properties.quote.msg + '</div>';
     }
+	properties.text = properties.text.replaceAll('{NAME}',thisName)
+		.replaceAll('{COLOR}',thisColor);
+	properties.text = markupify(properties.text)
     chatContent += properties.text;
     $("#chat_" + localId).html(chatContent);
 
-    var wordsPerMinute = 80;
-    var words = properties.text.split(' ').length;
-    if(words < 2 && properties.text.length > 20){
-      wordsPerMinute = 10;
-    }
-    if(words < 2 && properties.text.length > 70){
-      wordsPerMinute = 4;
-    }
-    var approximateDuration = (words / wordsPerMinute) * 60 * 1000; 
-    speak.play(properties.text, { pitch: property.pitch, speed: property.sped },onendCallback);
+   if(!properties.text.startsWith('-')){speak.play(
+	   									properties.text, { pitch: property.pitch, speed: property.sped },
+										()=>{
+											onendCallback();  $("#chat_" + localId).hide();
+        									$("#point_" + localId).hide();
+										}
+        
+   );}
 
     $("#bworg").click(() => {
       window.open("https://bonziworld.org","_blank");
     });
-    setTimeout(() => {
-      if(!properties.text.startsWith("-")){
-        $("#chat_" + localId).hide();
-        $("#point_" + localId).hide();
-        
-      } else {
-        setTimeout(() => {
-          $("#chat_" + localId).hide();
-          $("#point_" + localId).hide();
-        },approximateDuration * 20);
-      }
-    }, approximateDuration);
-
+  
   } 
   var update = (properties) => {
     var tagEl = document.getElementById("tag_" + localId);
