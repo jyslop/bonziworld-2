@@ -40,6 +40,15 @@ function markupify(text,removeMarkupze=false){
 
 	return text;
 }
+function reversify(newArray){
+	let result = [];
+
+	for(let i=newArray.length-1;i>0;i--){ //for loops if they were evil and fucked up and twisted and sick in the head:
+		result.push(newArray[i]); //calm down woody we're you're friends
+	} // shut up buzz
+	// i'll kill you
+	return result;
+}
 class Notify {
     constructor(properties={title:"Alert",icon:"./img/desktop/infobubble.png",body:"Empty",parent:'info_icon'}){
         properties.title = properties.title || "Alert";
@@ -595,7 +604,7 @@ class Dialog {
         this.element.style.top = `${y}px`;
     }
 }
-let colorCache = {
+var colorCache = {
   "red":"/img/bonzi/red.png",
   "green":"/img/bonzi/green.png",
   "blue":"/img/bonzi/blue.png",
@@ -605,6 +614,16 @@ let colorCache = {
   "brown":"/img/bonzi/brown.png",
   "bcn":"/img/bonzi/bcn.png",
   "smile":"/img/bonzi/smile.png",
+};
+var animationList = {
+	"praise":[
+		[7,10],[8,10],[9,10],[10,10],[11,10],[12,10]
+	],
+	"earth":[
+		[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[12,4],[13,4],[14,4],[15,4],[16,4],[17,4],
+		[1,5],[2,5],[3,5],[5,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[12,5],[13,5],[15,5],[15,5],[16,5],[17,5],
+		[1,6],[2,6]
+	],
 };
 function bonzi(colorurl,left,top,property){
 	let urlNames = {};
@@ -687,15 +706,20 @@ function bonzi(colorurl,left,top,property){
 		
 		draw(newX,newY);
 	};
-var animationList = {
-	"praise":{
-		"fwd":[],
-		"back":[]
-	}
-};
-var thisAnimation = "idle";
-var animationPlayback = (animationData) => {
-	
+
+var thisAnimation = {name:'idle',open:false};
+var animationPlayback = (animationData,playType) => {
+	let newData = playType == 'fwd' ? animationData : reversify(animationData); 
+	let frameTick = this.frameTick;
+	newData.forEach((frameInfo,i) => {
+		setTimeout(() => {
+			if(frameInfo != null){
+				toFrame(...frameInfo);
+			} else {
+				draw(0,0);
+			}
+		},i*frameTick);
+	});
 };
   var animate = (properties) => {
     if(isStaticImage){
@@ -855,15 +879,21 @@ var animationPlayback = (animationData) => {
 	  let lastMsgLength = 1;
 	  let i = 0;
 	  let processArray = () => {
+		  let exitContinue = () => {i++; processArray();}
+		  
 		  let eventCall = eventArray[i];
 		  if(eventCall[0] == 'msg'){
-			  talk({text:eventCall[1].msg},()=>{
-				  i++;
-				  processArray();
-			  });
-		  } else  {
-			  i++;
-			  processArray();
+			  talk({text:eventCall[1].msg},exitContinue);
+		  } else if(eventCall[0] == 'animation_preset')  {
+			  let animationNames = Object.keys(animationList);
+			  let animationRequest = eventCall[1].split('_');
+			  if(animationRequest.length > 1 && animationNames.includes(animationRequest[0])){
+ 				  let currentAnimation = animationList[animationRequest[0]];
+				  animationPlayback(currentAnimation,animationRequest[1])
+				  
+				  setTimeout(exitContinue,2200);
+			  } else {exitContinue();}
+			  
 		  }
 	  };
 	  processArray();
