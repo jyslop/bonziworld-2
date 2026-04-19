@@ -117,7 +117,8 @@ module.exports = {
         ['animation_preset','earth_fwd'],
         ['msg',{msg:`Did you know that Uranus is 31,518 miles (50,724 km) in diameter?`}],
         ['animation_preset','earth_back'],
-        ['animation_preset','grin_fwd']
+        ['animation_preset','grin_fwd'],
+        ['animation_preset','grin_back']
       ],
       [
         ['msg',{msg:`Fun Fact: The skript kiddie of this site didn't bother checking if the text that goes into the dialog box is HTML code.`}],
