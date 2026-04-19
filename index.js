@@ -103,9 +103,8 @@ let config = {
 				...i[Math.floor(Math.random()*i.length)],
 			 	['animation_preset','shrug_fwd'],
 				...m[Math.floor(Math.random()*m.length)],
-				['animation_reset'],
+				['animation_preset','shrug_back'],
 				...e[Math.floor(Math.random()*e.length)],
-				['animation_reset'],
 			];
 			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct},thisSocket.user,true);
 		},
@@ -117,9 +116,7 @@ let config = {
 			let eventConstruct = [
 				...i[Math.floor(Math.random()*i.length)],
 				...m[Math.floor(Math.random()*m.length)],
-				['animation_reset'],
 				...e[Math.floor(Math.random()*e.length)],
-				['animation_reset'],
 			];
 			eventRoom("userEvent",{id:thisSocket.user.id,events:eventConstruct},thisSocket.user,true);
 		},
