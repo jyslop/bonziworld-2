@@ -332,8 +332,8 @@ $(window).load(function(){
   if(isMobile()){
     $("#room_info").hide();
   }
-  $("#login_card").show();
   $("#login_load").hide();
+  $("#login_card").show();
   $("#login_go1").click(() => {
       setTimeout(() => {
         var audioe = new Audio("/sound/start.mp3");
