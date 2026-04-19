@@ -40,7 +40,28 @@ body {
 	background-color: rgba(109, 51, 160, 0.85); }
 
 /*# sourceMappingURL=readme.min.css.map */
-
+@keyframes md_rainbow {
+	from{filter:hue-rotate(0deg);}
+	to{filter:hue-rotate(360deg);}
+}
+.md-italic {
+	font-style:italic;
+}
+.md-bold {
+	font-weight:bold;
+}
+.md-rainbow {
+	color:red;
+	animation:md_rainbow 4s linear infinite;
+}
+.md-large {
+	font-size:30px;
+}
+.md-code {
+	background:black;
+	color:white;
+	font-family:monospace;
+}
 	</style>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
