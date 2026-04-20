@@ -1269,11 +1269,22 @@ function login(newRoom){
 			let newHeight = 600;
 			if(isMobile()){newWidth=300; newHeight=650;};
             new Dialog({title:"BonziVM",width:newWidth,height:newHeight,html:`
+			<style>.server {
+    background: #7d4eba;
+    background: linear-gradient(0deg, rgba(125, 78, 186, 1) 24%, rgba(158, 84, 255, 1) 76%, rgba(199, 156, 255, 1) 92%, rgba(177, 130, 237, 1) 98%);
+    border: 1px solid purple;
+    border-radius: 3px;
+    padding: 3px;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.65));
+}</style>
 			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;display:none;" id="bonzivmcontainer">
 			<iframe id="bonzivm_output" width="${newWidth}" height="${newHeight}" style="display:none;"></iframe></div>
-<div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;">
+<div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;" style="background: #d3b5f7;
+background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 252, 1) 39%, rgba(158, 84, 255, 1) 86%);">
     <p id="serverstatus">Selected server: none</p>
-    <button onclick="
+    <button class="server" onclick="
         mainmenu_vm.style.display='none';
         bonzivm_output.style.display='block';
 		document.getElementById('bonzivmcontainer').style.display='block';
@@ -1283,20 +1294,20 @@ function login(newRoom){
         window.open(window.bonziVMsrc,'BonziVM','width=600, height=480');
         }">Run VM</button>
     <hr>
-    <button onclick="window.bonziVMsrc='https://bonzi.gay';">
+    <button  class="server" onclick="window.bonziVMsrc='https://bonzi.gay';">
     <h2>Bonzi.Gay</h2>
     <hr>
     Erik's standard BonziWORLD. Opens in a chrome tab due to his WASM addiction.
     </button>
-    <button onclick="window.bonziVMsrc='https://hugboxworldrevived.onrender.com/';">
-    <h2>HugboxWORLD</h2>
+    <button onclick="window.bonziVMsrc='https://bonziworld.eu/';">
+    <h2>BwiWORLD</h2>
     <hr>
-    A fucked up BonziWORLD.
+    An enhanced fork of BiaWORLD edited by UnrealSticky
     </button>
-     <button onclick="window.bonziVMsrc='https://bonziworld.me';">
-    <h2>BonziWORLD.me</h2>
+     <button class="server" onclick="window.bonziVMsrc='https://bonziworldxp2.onrender.com';">
+    <h2>BonziWORLD 2</h2>
     <hr>
-    A bonzi.ga revival by donutscout.
+    This server (just in case you didn't know)
     </button>
     <hr>
     <input type="text" placeholder="Custom BonziWORLD URL" id="customurl"><button onclick="window.bonziVMsrc=customurl.value;">Submit</button>
