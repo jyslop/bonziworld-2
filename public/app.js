@@ -1189,7 +1189,7 @@ let musicList = [];
 					let updateList = () => {
 						saveArray('objectsmusic',musicList);
 						document.getElementById('musicplaylist').innerHTML='';
-						if(typeof musicList != 'object')return;
+						if(typeof musicList != 'object' || musicList == null)return;
 						musicList.forEach((musicObject,i) => {
 							document.getElementById('musicplaylist').insertAdjacentHTML('beforeend','<p class="optionmusic" id="'+musicObject.name.substring(0,3)+'" onclick="playSong(musicList['+i.toString()+'].src,this.id);">'+musicObject.name+'&nbsp;&nbsp;&nbsp; || <span onclick="musicList.splice('+i.toString()+',1); updateList();">🗑️</span></p>');
 						});
