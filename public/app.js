@@ -627,11 +627,15 @@ var animationList = {
 	"praise":[
 		[7,10],[8,10],[9,10],[10,10],[11,10],[12,10]
 	],
-	"earth":[
+	"earth":{
+		"fwd":[
 		[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[12,4],[13,4],[14,4],[15,4],[16,4],[17,4],
-		[1,5],[2,5],[3,5],[5,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[12,5],[13,5],[15,5],[15,5],[16,5],[17,5],
+		[1,5],[2,5],[3,5]],
+		"back":[
+			[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[11,5],[12,5],[13,5],[15,5],[15,5],[16,5],[17,5],
 		[1,6],[2,6]
-	],
+		]
+	},
 };
 function bonzi(colorurl,left,top,property){
 	let urlNames = {};
@@ -717,6 +721,10 @@ function bonzi(colorurl,left,top,property){
 
 var thisAnimation = {name:'idle',open:false};
 var animationPlayback = (animationData,playType) => {
+	if(typeof animationData['fwd'] != 'undefined'){
+		if(playType == 'fwd')animationData = [...animationData['fwd']];
+		else animationData = [...animationData['back']];
+	}
 	let newData = playType == 'fwd' ? animationData : [...reversify(animationData),null]; 
 	let frameTick = this.frameTick;
 	newData.forEach((frameInfo,i) => {
