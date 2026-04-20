@@ -127,9 +127,16 @@ function saveArray(name,toSave){
 }
 function loadArray(arrayName){
 	let loaded = getCookie(arrayName);
-	let result = JSON.parse(loaded);
-	
-	return result;
+	if(loaded === null) {
+		return null;
+	}
+	try {
+		let result = JSON.parse(loaded);
+		return result;
+	} catch(e) {
+		console.error("Error parsing loadArray:", e);
+		return null;
+	}
 }
 var logtxt = `
 	<i>Welcome to BonziWORLD XP</i>
@@ -1168,7 +1175,9 @@ let mainSrc = "";
 
 let musicList = [];
 					let loadedMusic = loadArray('objectsmusic');
-					musicList = typeof loadedMusic == 'object' ? loadedMusic : musicList; 
+					// FIX: Safely initialize musicList with null check
+					musicList = (typeof loadedMusic == 'object' && loadedMusic !== null) ? loadedMusic : [];
+					if(musicList == null)musicList=[];
 					if(typeof musicList.length == 'undefined')musicList=[];
 					let lastId='';
 					let currentId='';
