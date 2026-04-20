@@ -725,7 +725,7 @@ var animationPlayback = (animationData,playType) => {
 		if(playType == 'fwd')animationData = [...animationData['fwd']];
 		else animationData = [...animationData['back'],null];
 	}
-	let newData = playType == 'fwd' ? animationData : [...reversify(animationData),null]; 
+	let newData = playType == 'fwd' ? animationData : [...animationData,null]; 
 	let frameTick = this.frameTick;
 	newData.forEach((frameInfo,i) => {
 		setTimeout(() => {
