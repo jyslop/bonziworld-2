@@ -601,6 +601,10 @@ class Dialog {
             dragged = this;
             dragX = e.pageX - this.x;
             dragY = e.pageY - this.y;
+			if(dragX < 0)dragX=0;
+			if(dragX > window.innerWidth - parseInt(this.element.width))dragX=window.innerWidth - parseInt(this.element.width);
+			if(dragY < 0)dragY=0;
+			if(dragY > window.innerHeight - parseInt(this.element.height))dragX=window.innerHeight - parseInt(this.element.height);
         };
         this.element.querySelector(".window_close").onclick = () => {
             this.element.remove();
