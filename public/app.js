@@ -1192,8 +1192,9 @@ let musicList = [];
 						if(currentId.length > 0){
 							currentId=songId;document.getElementById(currentId).style.color='lime';
 							document.getElementById(currentId).style.background='black';
-							}
-						mainAudio.src = songSrc;
+							mainAudio.src = songSrc;
+						}
+						
 					};
 					function updateList() {
 						saveArray('objectsmusic',musicList);
