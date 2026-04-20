@@ -1169,7 +1169,7 @@ let mainSrc = "";
 let musicList = [];
 					let loadedMusic = loadArray('objectsmusic');
 					musicList = typeof loadedMusic == 'object' ? loadedMusic : musicList; 
-					
+					if(typeof musicList.length == 'undefined')musicList=[];
 					let lastId='';
 					let currentId='';
 					let playSong = (songSrc,songId) => {
