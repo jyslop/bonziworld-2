@@ -1186,7 +1186,7 @@ let musicList = [];
 							}
 						mainAudio.src = songSrc;
 					};
-					let updateList = () => {
+					function updateList() {
 						saveArray('objectsmusic',musicList);
 						document.getElementById('musicplaylist').innerHTML='';
 						if(typeof musicList != 'object' || musicList == null)return;
