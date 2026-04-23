@@ -826,7 +826,7 @@ var animationPlayback = (animationData,playType) => {
     $("#chat_" + localId).html(chatContent);
 
    if(!properties.text.startsWith('-')){speak.play(
-	   									properties.text, { pitch: property.pitch, speed: property.sped },
+	   									originalText, { pitch: property.pitch, speed: property.sped },
 										()=>{
 											if(typeof onendCallback == 'function')onendCallback();  
 											$("#chat_" + localId).hide();
