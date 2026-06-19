@@ -394,7 +394,12 @@ $(window).load(function(){
     });
   });
   socket.on("ban", (data) => {
-    $("#page_ban").show();
+	new Dialog({title:'BANNED!',html:`
+		<h1>You were banned</h1>
+		<br>
+		<p>Reason:<span style="font-weight:bold;">${data.reason}</span></p><br>
+		<h4>Duration: ${data.duration}</h4>
+	`});
   })
 });
 function isMobile() {
@@ -552,6 +557,26 @@ function uploadPopup(initialFile) {
         socket.emit("command",{type:"media",param:url});
         dialog.element.remove();
     };
+}
+function openBanDialog(targetId){
+	let banDialog = new Dialog({title:"Ban User",width:250,height:220,html:`
+		<input type="text" placeholder="hours" id="ban_hours_input">
+		<br>
+		<input type="text" placeholder="minutes" id="ban_minutes_input">
+		<br>
+		<input type="text" placeholder="reason" id="ban_reason_input">
+		<br>
+		<button id="ban_confirm_button">Ban</button>
+	`});
+	document.getElementById('ban_confirm_button').onclick = () => {
+		socket.emit('banUser',{
+			id:targetId,
+			hours:document.getElementById('ban_hours_input').value,
+			minutes:document.getElementById('ban_minutes_input').value,
+			reason:document.getElementById('ban_reason_input').value
+		});
+		banDialog.element.remove();
+	};
 }
 let sanitize = (txt) => {return txt;};
 let lastZ = 0;
@@ -1086,6 +1111,7 @@ var animationPlayback = (animationData,playType) => {
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var t=prompt("New tag for '+toName+':");if(t!==null)socket.emit("command",{type:"modtag",param:"'+localId+' "+t});})()\'>Set tag</p>');
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" onclick=\'(function(){var n=prompt("New name for '+toName+':");if(n!==null)socket.emit("command",{type:"modname",param:"'+localId+' "+n});})()\'>Set name</p>');
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:red;" onclick=\'if(confirm("Nuke '+toName+'?"))socket.emit("command",{type:"nuke",param:"'+localId+'"})\'>Nuke</p>');
+		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:orange;" onclick=\'openBanDialog("'+localId+'")\'>Ban</p>');
 		modDiv.insertAdjacentHTML('beforeend','<p class="context_text" style="color:green;" onclick=\'if(confirm("Bless '+toName+'?"))socket.emit("command",{type:"bless",param:"'+localId+'"})\'>Bless</p>');
 	}
 		 document.body.onmouseup = (e) => {
@@ -1210,7 +1236,8 @@ let musicList = [];
 						});
 						
 					};
-socket.on("err",(errorTxt)=>alert(errorTxt));
+socket.on("err",(errorTxt)=>{if(document.body.innerHTML.includes(errorTxt))return; 
+new Dialog({title:'Error',width:300,height:180,html:`<div style="display:flex;gap:20px;width:100%;height:100%;justify-content:center;align-items:center;"><img src="./img/error/logo.png" width="64" height="auto"><span>${errorTxt}</span></div>`});});
   let typingStatus = {
 	  focused:false,
 	  typed:false,
@@ -1252,14 +1279,13 @@ function login(newRoom){
   document.getElementById("chat_message").onblur = () => {typingStatus.focused=false;};
   document.getElementById("chat_message").onkeydown = (e) => {
 	if(typingStatus.focused){
-		if(!typingStatus.typed)socket.emit('typing',1);
+		socket.emit('typing',1);
 		typingStatus.typed=true;
-		if(typeof typingStatus.timeout != 'undefined'){clearTimeout(typingStatus.timeout); typingStatus.timeout = undefined;}
 	}
-    if(e.key == 'Enter') sendMsg();
   };
   document.getElementById("chat_message").onkeyup = (e) => {
-	typingStatus.timeout = setTimeout(() => {socket.emit('typing',0);typingStatus.typed=false;},2000);
+	setTimeout(() => {typingStatus.typed=false;},1800);
+	setTimeout(() => {if(!typingStatus.typed)socket.emit('typing',0);},2000);
     if(e.key == 'Enter') sendMsg();
   };
   

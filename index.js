@@ -5,6 +5,7 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var cors = require('cors');
 var fs = require('fs');
+var bans = require('./bans.js');
 
 let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8');
 /*
@@ -344,6 +345,11 @@ function getUsers(roomId){
 	});
 	return result;
 }
+function findUser(roomId,guid){
+	let result = -1;
+	publicrooms[roomId].users.forEach(r => {if(r.id == guid){result = r;}});
+	return result;
+}
 function hasUser(roomId,guid){
 	let result = false;
 	result = publicrooms[roomId].users.some(r => guid == r.id);
@@ -389,7 +395,21 @@ function updateUser(originalUser,socketData,localDisplay=false){
 	return result;
 }
 
-
+setInterval(() => {
+	Object.keys(bans).forEach(banIp => {
+		let banCurrent = bans[banIp];
+		
+		if(!isNaN(parseFloat(banCurrent.duration))){
+			bans[banIp].duration = (parseFloat(bans[banIp].duration)-1).toString();
+			if(parseFloat(banCurrent.duration) < 1){
+				delete bans[banIp];
+			}
+		}
+	});
+	fs.writeFileSync('./bans.js',`
+							module.exports = ${JSON.stringify(bans,null,2)};
+						`,'utf-8')
+},60000);
 io.on("connection", function(socket){
 	var userid = Idgen(10);
 	var newcolor = colorList[colorNames[Math.floor(Math.random()*colorNames.length)]];
@@ -413,11 +433,22 @@ io.on("connection", function(socket){
 		tag:"",
 		socket:socket
 	};
-	
-	socket.on("login", (data) => {
+	if(Object.keys(bans).includes(socket.user.ip)){
+		let entry = bans[socket.user.ip];
+		let MINUTES = parseFloat(entry.duration);
+		
+		let result = {duration:'',reason:entry.reason};
+		if(MINUTES > 59){
+			result.duration+=(Math.floor(MINUTES/60)).toString()+' hours and ';
+			result.duration+=Math.round((MINUTES/60)-Math.floor(MINUTES/60)).toString()+' minutes';
+		}
+		else {result.duration+=MINUTES.toString()+' minutes';}
+		socket.emit("ban",result);
+	} else {
+		socket.on("login", (data) => {
 		    socket.removeAllListeners('msg');
-    socket.removeAllListeners('typing');
-    socket.removeAllListeners('command');
+		socket.removeAllListeners('typing');
+		socket.removeAllListeners('command');
 		if(isFucked(socket.user.ip)){
 			socket.emit("err","No proxies allowed right now");
 			return;
@@ -467,7 +498,33 @@ io.on("connection", function(socket){
 				socket.emit("userlist",{list:roomUsers});
 				
 				socket.user.loggedIn=true;
-			
+				socket.on("banUser",(data) => {
+					if(typeof data == "object" && socket.user.level > 2){
+						if(typeof data.id !== 'string' || typeof data.hours !== 'string' || typeof data.minutes !== 'string' || typeof data.reason !== 'string')return;
+						if(data.reason.length < 1)data.reason='Unknown';
+						
+						
+						let targetUser = findUser(socket.user.roomId,data.id);
+						//console.log(targetUser);
+						if(typeof targetUser == 'number')return;
+						
+						let result = {duration:0,reason:''};
+						
+						let sleeperAgent = ['forever','infinite'];
+						if(sleeperAgent.includes(data.hours.toLowerCase()) || 
+						sleeperAgent.includes(data.minutes.toLowerCase())
+						){
+							result.duration=null;
+						}else {result.duration=parseFloat(data.minutes)+(parseFloat(data.hours)*60);}
+						result.reason=data.reason;
+						result.duration=result.duration.toString();
+						
+						bans[targetUser.ip]=result;
+						fs.writeFileSync('./bans.js',`
+							module.exports = ${JSON.stringify(bans,null,2)};
+						`,'utf-8')
+					}
+				});
 				socket.on("msg", (data) => {
 					
 					if(typeof data == "object"){
@@ -494,7 +551,7 @@ io.on("connection", function(socket){
 					}
 				});
 				socket.on("typing",(data) => {
-					console.log(JSON.stringify(data));
+					//console.log(JSON.stringify(data));
 					if(typeof data != "string" && typeof data != "number")return;
 					//people might be able to crash this by running it in non-existent rooms or logged out idk lol
 					let status = false;
@@ -543,5 +600,5 @@ io.on("connection", function(socket){
 		}
 	});
 
-	
+	}
 });
