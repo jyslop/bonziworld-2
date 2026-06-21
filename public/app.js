@@ -14,7 +14,7 @@ var replyTarget = null;
 
 let listenerNames = ["msg","asshole","userlist","leave","newuser","room","userEvent"];
 function setCookie(cname,cvalue,exdays) {
-  const d = new Date();
+  var d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
@@ -162,69 +162,169 @@ var hatList = {
   "astronaut": "./img/bonzi/hats/astronaut.png"
 };
 
+            var hexToRgb = (hex) => {
+                let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            };
+
+            var applyBgColor = (hexColor) => {
+                let contentElem = document.getElementById("content");
+                if (!contentElem) return;
+                let currentBg = window.getComputedStyle(contentElem).backgroundColor;
+                let opacity = "1";
+                if (currentBg.includes("rgba")) {
+                    let parts = currentBg.split(",");
+                    if (parts.length === 4) opacity = parts[3].replace(")", "").trim();
+                }
+                let rgb = hexToRgb(hexColor);
+                if (rgb) {
+                    contentElem.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+                }
+            };
 let applets = {
-	"settings":{
-		buttonId:"my_bonzi",
-		open:false,
-		onpress:()=>{
-			if(document.body.innerHTML.includes('<input type="text" placeholder="Username" id="usernameswap">')){errs["applet_open"](); return;}
-            new Dialog({title:"Settings",width:'400',height:'560',html:`
-				<div style="width:400px;height:560px;overflow-y:scroll;overflow-x:hidden;">
-				
-				Color:<br>
-				<div id="row_color1" style="display:flex;flex-direction:row;">
-					
-				</div>
-				<div id="row_color2" style="display:flex;flex-direction:row;">
-					
-				</div>
-				<input type="text" placeholder="crosscolor (optional, catbox.moe only)" id="ccurl">
-				<button onclick="socket.emit('command',{type:'color',param:document.getElementById('ccurl').value});">submit CC</button>
-				&nbsp;
-				&nbsp;
-				&nbsp;
-				&nbsp;
-				&nbsp;
-				&nbsp;
-				&nbsp;
-				<button onclick="window.open('https://catbox.moe');">Catbox</button>
-				<hr>
-				Name:<br>
-				<input type="text" placeholder="Username" id="usernameswap"><button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value}); profileList[0].name=document.getElementById('usernameswap').value;">Set Name</button>
-				<hr>
-				Hats:<br>
-				<div id="hat_grid" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;width:300px;height:300px;overflow-y:scroll;overflow-x:hidden;"></div>
-				<button onclick="socket.emit('command',{type:'hat',param:''}); profileList[0].hats=[];" style="margin-top:6px;">Clear Hats</button>
-				
-				</div>
-			`,
-			onclose:()=>{
-				saveArray('profiles',profileList);
-			}});
-			let clrs = ['red','brown','green','blue','purple','pink','black'];
-			let currentRow = 1;
-			for(let i=0;i<clrs.length;i++){
-				if(i >= clrs.length/2)currentRow=2;
-				
-				document.getElementById('row_color'+currentRow).insertAdjacentHTML('beforeend',`
-					<button onclick="socket.emit('command',{type:'color',param:'${clrs[i]}'}); profileList[0].color='${clrs[i]}';">
-						<div style="width:35px;height:35px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink','magenta').replaceAll('purple','indigo')});"></div>
-					</button>
-				`);
-			}
-			let hatGrid = document.getElementById('hat_grid');
-			Object.keys(hatList).forEach(hatName => {
-				
-				hatGrid.insertAdjacentHTML('beforeend',`
-					<button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'}); profileList[0].hats.push('${hatName}')" style="display:flex;flex-direction:column;align-items:center;width:40px;font-size:10px;padding:3px;">
-						<img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">
-						${hatName}
-					</button>
-				`);
-			});
-		},
-	},
-	"mediaupload":{
+	"settings": { 
+        buttonId: "my_bonzi", 
+        open: false, 
+        onpress: () => { 
+            if (document.body.innerHTML.includes('<input type="text" placeholder="Username" id="usernameswap">')) {
+                errs["applet_open"](); 
+                return;
+            } 
+
+
+
+            new Dialog({
+                title: "Settings",
+                width: '400',
+                height: '560',
+                html: `
+                <div style="display:flex; overflow: hidden !important;" bis_skin_checked="1">
+                    <!-- Sidebar Navigation -->
+                    <div style="width: 99px; height:497px; background: linear-gradient(rgb(188 160 230), rgb(130 102 169)); display:flex; flex-direction:column; align-items:center; padding:10px" bis_skin_checked="1">
+                        <div style="width:95px; height:70px; background:white; border-radius: 4px; font-size:12px; text-align:center;" bis_skin_checked="1">
+                            <div style="width: 89px; height: 18px; background: indigo; border-radius: 4px 4px 0px 0px; padding: 3px; font-size: 12px; color: white; font-weight: bold; text-shadow: 1px 1px black;" bis_skin_checked="1">
+                                Menu
+                            </div> 
+                            <a href="#" id="tab_btn_mybonzi" style="display:block; margin: 4px 0; color: indigo; font-weight: bold;">My Bonzi</a>
+                            <a href="#" id="tab_btn_css" style="display:block; color: gray;">CSS</a>
+                        </div> 
+                    </div> 
+
+                    <div id="settings_panel_content" style="width: 386px; height: 517px; overflow-y: hidden; overflow-x:hidden; color: white; text-shadow: 1px 1px black; background: rgb(134 92 152); padding: 10px; box-sizing: border-box;" bis_skin_checked="1">
+                        
+                        <div id="view_mybonzi" style="display: block; width: 100%; height: 100%;">
+                            Color:<br> 
+                            <div id="row_color1" style="display:flex; flex-direction:row; margin-bottom: 4px;" bis_skin_checked="1"></div> 
+                            <div id="row_color2" style="display:flex; flex-direction:row; margin-bottom: 8px;" bis_skin_checked="1"></div> 
+                            <input type="text" placeholder="crosscolor (optional, catbox.moe only)" id="ccurl" style="width: 160px;"> 
+                            <button onclick="socket.emit('command',{type:'color',param:document.getElementById('ccurl').value});">submit CC</button> 
+                            &nbsp; &nbsp; &nbsp; <button onclick="window.open('https://catbox.moe');">Catbox</button> 
+                            <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.4); margin: 8px 0;"> 
+                            Name:<br> 
+                            <input type="text" placeholder="Username" id="usernameswap">
+                            <button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value}); profileList[0].name=document.getElementById('usernameswap').value;">Set Name</button> 
+                            <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.4); margin: 8px 0;"> 
+                            Hats:<br> 
+                            <div id="hat_grid" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; width:100%; height: 170px; overflow-y:scroll; overflow-x:hidden;" bis_skin_checked="1"></div> 
+                            <button onclick="socket.emit('command',{type:'hat',param:''}); profileList[0].hats=[];" style="margin-top:6px;">Clear Hats</button> 
+                        </div>
+
+                        <div id="view_css" style="display: none; width: 100%; height: 100%;">
+                            Custom CSS Editor:<br>
+                            <textarea id="css_tab_textarea" style="width: 95%; height: 260px; background: #1a1525; color: #d4c5f0; border: 1px solid #5c3c80; font-family: monospace; font-size: 11px; resize: none; margin-top: 5px; padding: 4px; box-sizing: border-box;" placeholder="/* Enter custom CSS rules here */"></textarea>
+                            <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.4); margin: 12px 0;">
+                            Background Color:<br>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                                <input type="color" id="bg_color_ramp" style="width: 100px; height: 24px; border: 1px solid #5c3c80; cursor: pointer; background: transparent; padding: 0;">
+                                <span style="font-size: 11px; opacity: 0.8;">Click here to change</span>
+								<button id="bg_color_del">Reset</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> `, 
+                onclose: () => { 
+                    saveArray('profiles', profileList); 
+                }
+            });
+
+            let styleTag = document.getElementById("bonzi-custom-css");
+            if (!styleTag) {
+                styleTag = document.createElement("style");
+                styleTag.id = "bonzi-custom-css";
+                document.head.appendChild(styleTag);
+            }
+
+            var btnMyBonzi = document.getElementById("tab_btn_mybonzi");
+            var btnCss = document.getElementById("tab_btn_css");
+            var viewMyBonzi = document.getElementById("view_mybonzi");
+            var viewCss = document.getElementById("view_css");
+            var cssTextarea = document.getElementById("css_tab_textarea");
+            var colorRamp = document.getElementById("bg_color_ramp");
+
+            btnMyBonzi.addEventListener("click", (e) => {
+                e.preventDefault();
+                viewMyBonzi.style.display = "block";
+                viewCss.style.display = "none";
+                btnMyBonzi.style.color = "indigo";
+                btnMyBonzi.style.fontWeight = "bold";
+                btnCss.style.color = "gray";
+                btnCss.style.fontWeight = "normal";
+            });
+
+            btnCss.addEventListener("click", (e) => {
+                e.preventDefault();
+                viewMyBonzi.style.display = "none";
+                viewCss.style.display = "block";
+                btnCss.style.color = "indigo";
+                btnCss.style.fontWeight = "bold";
+                btnMyBonzi.style.color = "gray";
+                btnMyBonzi.style.fontWeight = "normal";
+            });
+
+            var savedCSS = getCookie("custom_bonzi_css");
+            if (savedCSS) {
+                cssTextarea.value = savedCSS;
+                styleTag.innerHTML = savedCSS;
+            }
+
+            var savedBgColor = getCookie("custom_bonzi_bg");
+            if (savedBgColor) {
+                colorRamp.value = savedBgColor;
+                applyBgColor(savedBgColor);
+            }
+
+            cssTextarea.addEventListener("input", () => {
+                styleTag.innerHTML = cssTextarea.value;
+                setCookie("custom_bonzi_css", cssTextarea.value, 30);
+            });
+
+            colorRamp.addEventListener("input", () => {
+                applyBgColor(colorRamp.value);
+                setCookie("custom_bonzi_bg", colorRamp.value, 30);
+            });
+
+			document.getElementById('bg_color_del').addEventListener('click',(e)=>{
+console.log('q');
+				colorRamp.value='#80439bed';
+				applyBgColor(colorRamp.value);
+                setCookie("custom_bonzi_bg", colorRamp.value, 30);
+		});
+
+            let clrs = ['red', 'brown', 'green', 'blue', 'purple', 'pink', 'black']; 
+            let currentRow = 1; 
+for (let i = 0; i < clrs.length; i++) {if (i >= clrs.length / 2) currentRow = 2;document.getElementById('row_color' + currentRow).insertAdjacentHTML('beforeend',`
+  <button onclick="socket.emit('command',{type:'color',param:'${clrs[i]}'}); profileList[0].color='${clrs[i]}';"> 
+ <div style="width:35px;height:35px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink', 'magenta').replaceAll('purple', 'indigo').replaceAll('brown', 'saddlebrown')});"></div>  </button> `);}// Original Populate Routines: Populate Hat gridslet 
+hatGrid = document.getElementById('hat_grid');
+Object.keys(hatList).forEach(hatName => {hatGrid.insertAdjacentHTML('beforeend',`
+  <button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'}); profileList[0].hats.push('${hatName}')" style="display:flex;flex-direction:column;align-items:center;width:40px;font-size:10px;padding:3px;">  <img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">  
+${hatName}  </button> `);});},},
+"mediaupload":{
 		buttonId:"media_upload",
 		open:false,
 		onpress:()=>{
@@ -367,7 +467,11 @@ $(window).load(function(){
       iconBar.style.display = (iconBar.style.display === "flex") ? "none" : "flex";
     }
   };
-
+	  var savedBgColor = getCookie("custom_bonzi_bg");
+  if (savedBgColor) {
+    applyBgColor(savedBgColor);
+  }
+	
   updateIconToggleButton();
 
   document.addEventListener("touchstart", touchHandler, true);
@@ -700,8 +804,9 @@ function bonzi(colorurl,left,top,property){
 	  if(property.tag.length < 1)tagHtml=``;
   }
   content.insertAdjacentHTML('beforeend',`
-  <div id='name_${localId}' style='position:absolute;z-index:500;' class='bonzi_name'>${tagHtml} ${property.name}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};z-index:500;' id='${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat1_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat2_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat3_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat4_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat5_${localId}'></canvas><div id='chat_${localId}' class='bubble_chat' style='z-index:502;'><div class='msg_cont'>Test Message</div></div><div id='point_${localId}' class='bubble_point' style='z-index:503;'></div>
+  <div id='name_${localId}' style='position:absolute;z-index:500;' class='bonzi_name'>${tagHtml} ${markupify(property.name)}</div><canvas class='bonzi_canvas' width='200' height='160' style='position:absolute;top:${top};left:${left};z-index:500;' id='${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat1_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat2_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat3_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat4_${localId}'></canvas><canvas class='bonzi_hat_layer' width='200' height='160' style='position:absolute;top:${top};left:${left};pointer-events:none;z-index:500;' id='hat5_${localId}'></canvas><div id='chat_${localId}' class='bubble_chat' style='z-index:502;display:none;'><div class='msg_cont'></div></div><div id='point_${localId}' class='bubble_point' style='z-index:503;display:none;'></div>
   `);
+  
   $("#chat_"+localId).hide();
   $("#point_" + localId).hide();
 
@@ -836,8 +941,8 @@ var animationPlayback = (animationData,playType) => {
     if(this.mute == true){
       return;
     }
-    $("#chat_" + localId).show();
-    $("#point_" + localId).show();
+    document.getElementById("chat_" + localId).style.display="block";
+    document.getElementById("point_" + localId).style.display="block";
 
     var chatContent = '';
     if(properties.quote && properties.quote.name && properties.quote.msg){
@@ -851,11 +956,11 @@ var animationPlayback = (animationData,playType) => {
     $("#chat_" + localId).html(chatContent);
 
    if(!properties.text.startsWith('-')){speak.play(
-	   									originalText, { pitch: property.pitch, speed: property.sped },
+	   									originalText.replaceAll('[[',''), { pitch: property.pitch, speed: property.sped },
 										()=>{
 											if(typeof onendCallback == 'function')onendCallback();  
-											$("#chat_" + localId).hide();
-        									$("#point_" + localId).hide();
+											 document.getElementById("chat_" + localId).style.display="none";
+    document.getElementById("point_" + localId).style.display="none";
 										}
         
    );}
@@ -865,7 +970,7 @@ var animationPlayback = (animationData,playType) => {
     });
   
   } 
-  var update = (properties) => {
+  var update = (properties,reDraw=true) => {
     var tagEl = document.getElementById("tag_" + localId);
     if(tagEl){
       if(properties.tag && properties.tag.length > 0){
@@ -876,15 +981,16 @@ var animationPlayback = (animationData,playType) => {
         tagEl.style.display = "none";
       }
     }
-    $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + properties.name);
+    $("#name_" + localId).html((properties.tag && properties.tag.length > 0 ? "<div class='bonzi_tag'>"+properties.tag+"</div>" : "") + markupify(properties.name));
     isStaticImage = false;
     if(typeof properties.firstJoin == "boolean"){
 		property.firstJoin = properties.firstJoin;
 		img.src = properties.color;
 	}
 	else {img.src = properties.color}
+	if(reDraw){
     draw(0,0);
-    animate({type: "idle"});
+    animate({type: "idle"});}
     if(Array.isArray(properties.hats)){
       currentHats = properties.hats;
       drawHats();
@@ -900,14 +1006,7 @@ var animationPlayback = (animationData,playType) => {
 				if(frameInfo != null && !instant){
 					toFrame(...frameInfo);
 				} else {
-					document.getElementById(localId).remove();
-					document.getElementById("name_" + localId).remove();
-					document.getElementById("chat_" + localId).remove();
-					document.getElementById("point_" + localId).remove();
-					for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
-						let hatCanvas = document.getElementById('hat'+layerIdx+'_'+localId);
-						if(hatCanvas)hatCanvas.remove();
-					}
+					removeBonziElements(localId);
 		
 					bonzislist.splice(screenbonzis({id:localId}).queue,1);
 					bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
@@ -1166,27 +1265,54 @@ function screenbonzis(properties){
         return newy1 + "px";
       }
     };
+function removeAllById(id){
+	document.querySelectorAll('[id="'+id+'"]').forEach(el => el.remove());
+}
+function removeBonziElements(id){
+	removeAllById(id);
+	removeAllById('name_'+id);
+	removeAllById('chat_'+id);
+	removeAllById('point_'+id);
+	for(let layerIdx = 1; layerIdx <= 5; layerIdx++){
+		removeAllById('hat'+layerIdx+'_'+id);
+	}
+}
 function resetUsers(userlist) {
-    bonzislist.forEach(bonziData => {
-        let ids = [bonziData.id, 'name_'+bonziData.id, 'chat_'+bonziData.id, 'point_'+bonziData.id];
-        ids.forEach(id => { let el = document.getElementById(id); if(el) el.remove(); });
-        for(let i = 1; i <= 5; i++) {
-            let h = document.getElementById('hat'+i+'_'+bonziData.id);
-            if(h) h.remove();
-        }
-    });
+    bonzislist.forEach(bonziData => removeBonziElements(bonziData.id));
     bonzislist = [];
 
-    userAmt = userlist.length;
-    for(let i = 0; i < userAmt; i++) {
-        var newuser = new bonzi(userlist[i].color, randompos("x"), randompos("y"), {name: userlist[i].name, id: userlist[i].id, tag: userlist[i].tag||"", hats: userlist[i].hats||[], firstJoin: true});
+    let seen = new Set();
+    let deduped = userlist.filter(u => !seen.has(u.id) && seen.add(u.id));
+
+    userAmt = deduped.length;
+    deduped.forEach(u => {
+        var newuser = new bonzi(u.color, randompos("x"), randompos("y"), {name:u.name, id:u.id, tag:u.tag||"", hats:u.hats||[], firstJoin:true});
         newuser.queue = bonzislist.length;
         bonzislist.push(newuser);
-    }
+    });
     updateUsers();
 }
 let disconnectErr = true;
+function unfuck(){
 
+	//RANCID FUCKING HACK
+	//google chrome and javascript is sourced directly from mossad's rotting asshole
+	//the creation of bonzi elements FORCES duplicate versions of nametags and message bubbles
+//there are no duplicate bonzis and not once does html creation get done twice in the process of spawning a bonzi
+//no flaws with anything ive done its likely
+
+
+	let destruction = [];
+	for(let i=0;i<document.querySelectorAll('*').length;i++){
+		let c = document.querySelectorAll('*')[i];
+		bonzislist.forEach(b => {
+			if(c.id.includes(b.id) || c.id == b.id){
+				if(c.style.left.length < 1 && !c.id.includes('tag'))destruction.push(c);
+			}
+		});
+	}
+	destruction.forEach(fuckedElement => {fuckedElement.remove();});
+}
 
 function reconnect(newRoom) {
 	let loginLoop = () => {
@@ -1240,8 +1366,8 @@ socket.on("err",(errorTxt)=>{if(document.body.innerHTML.includes(errorTxt))retur
 new Dialog({title:'Error',width:300,height:180,html:`<div style="display:flex;gap:20px;width:100%;height:100%;justify-content:center;align-items:center;"><img src="./img/error/logo.png" width="64" height="auto"><span>${errorTxt}</span></div>`});});
   let typingStatus = {
 	  focused:false,
-	  typed:false,
-	  timeout:undefined
+	  t:0,
+	  last:0
   };
 let roomModify = {
 	public:false	
@@ -1269,23 +1395,24 @@ function login(newRoom){
 	};
   $("#login_card").hide();
   $("#login_load").show();
+  let nn = String($("#login_name").val()).substring(0, 64);
+  if(nn.length < 1)nn=profileList[0].name;
  socket.emit("login", { 
-    name: String($("#login_name").val()).substring(0, 64), 
+    name: nn, 
     room: typeof newRoom === 'string' ? newRoom.substring(0, 64) : ""
 });
 
-
+  setInterval(() => {typingStatus.t+=100; if(typingStatus.t>2000){typingStatus.t=2000;}},100);
   document.getElementById("chat_message").onfocus = () => {typingStatus.focused=true;};
   document.getElementById("chat_message").onblur = () => {typingStatus.focused=false;};
   document.getElementById("chat_message").onkeydown = (e) => {
 	if(typingStatus.focused){
 		socket.emit('typing',1);
-		typingStatus.typed=true;
+		typingStatus.t=0;
 	}
   };
   document.getElementById("chat_message").onkeyup = (e) => {
-	setTimeout(() => {typingStatus.typed=false;},1800);
-	setTimeout(() => {if(!typingStatus.typed)socket.emit('typing',0);},2000);
+	setTimeout(() => {if(typingStatus.t > 1500){socket.emit('typing',0);}},3500);
     if(e.key == 'Enter') sendMsg();
   };
   
@@ -1313,7 +1440,7 @@ function login(newRoom){
 			<div style="width:100%;height:100%;overflow-x:scroll;overflow-y:scroll;display:none;" id="bonzivmcontainer">
 			<iframe id="bonzivm_output" width="${newWidth}" height="${newHeight}" style="display:none;"></iframe></div>
 <div id="mainmenu_vm" onclick="serverstatus.innerHTML='Selected server: '+window.bonziVMsrc;" style="background: #d3b5f7;
-background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 252, 1) 39%, rgba(158, 84, 255, 1) 86%);">
+background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 252, 1) 39%, rgba(158, 84, 255, 1) 86%);width:100%;height:100%;">
     <p id="serverstatus">Selected server: none</p>
     <button class="server" onclick="
         mainmenu_vm.style.display='none';
@@ -1325,22 +1452,28 @@ background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 25
         window.open(window.bonziVMsrc,'BonziVM','width=600, height=480');
         }">Run VM</button>
     <hr>
-    <button  class="server" onclick="window.bonziVMsrc='https://bonzi.gay';">
-    <h2>Bonzi.Gay</h2>
+    <button class="server" onclick="window.bonziVMsrc='';">
+    <h2>mickai.me</h2>
     <hr>
-    Erik's standard BonziWORLD. Opens in a chrome tab due to his WASM addiction.
+    A modded version of bonzi.gay with necessary features
     </button>
-    <button onclick="window.bonziVMsrc='https://bonziworld.eu/';">
-    <h2>BwiWORLD</h2>
-    <hr>
-    An enhanced fork of BiaWORLD edited by UnrealSticky
-    </button>
-     <button class="server" onclick="window.bonziVMsrc='https://bonziworldxp2.onrender.com';">
+     <button class="server" onclick="window.bonziVMsrc='';
     <h2>BonziWORLD 2</h2>
     <hr>
     This server (just in case you didn't know)
     </button>
+	<button  class="server" onclick="window.bonziVMsrc='https://bonzi.gay';">
+    <h2>Bonzi.Gay</h2>
     <hr>
+    Erik's standard BonziWORLD. Opens in a chrome tab due to his WASM addiction.
+    </button>
+	    <button  class="server" onclick="window.bonziVMsrc='https://bonzi.gay';">
+    <h2>Bonzi.Gay</h2>
+    <hr>
+    Erik's standard BonziWORLD. Opens in a chrome tab due to his WASM addiction.
+    </button>
+    <hr>
+	
     <input type="text" placeholder="Custom BonziWORLD URL" id="customurl"><button onclick="window.bonziVMsrc=customurl.value;">Submit</button>
     <br>
     <p>Optionally, input a BonziWORLD server URL and BonziVM will attempt to run it</p>
@@ -1441,6 +1574,8 @@ background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 25
 		  socket.emit('command',{type:'roompublic',param:s});
 	});
     }
+setTimeout(unfuck,3000);
+setInterval(unfuck,5000);
   });
   socket.on("userlist", (data) => {
 	document.getElementById('users_online').innerText = data.list.length;
@@ -1448,6 +1583,13 @@ background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 25
   });
   socket.on("newuser", (data) => {
 	document.getElementById('users_online').innerText = parseInt(document.getElementById('users_online').innerText)+1;
+	var existingBonzi = screenbonzis({id:data.id});
+	if(existingBonzi){
+		removeBonziElements(data.id);
+		var existingIndex = bonzislist.indexOf(existingBonzi);
+		if(existingIndex !== -1)bonzislist.splice(existingIndex,1);
+		bonzislist.forEach((currentBonzi,i) => {bonzislist[i].queue=i;});
+	}
     var newuser = new bonzi(data.color,randompos("x"),randompos("y"),{name: data.name, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin: true});
 	newuser.queue = bonzislist.length;
     bonzislist.push(newuser);
@@ -1488,7 +1630,7 @@ background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 25
     if(typeof data.level == "number")myLevel = data.level;
 
 	let indicator = data.typing == true ? ' (...)' : '';
-    screenbonzis({id: data.id}).update({name: data.name+indicator,typing:data.typing, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false});
+    screenbonzis({id: data.id}).update({name: data.name+indicator,typing:data.typing, color: data.color, id: data.id, tag: data.tag||"", hats: data.hats||[],firstJoin:false},false);
   });
   socket.on("nuke",(data)=>{
     let nuketarget = screenbonzis({id:data.id});

@@ -39,7 +39,7 @@
   #content {
     width: 100%;
     height: 100%;
-    background-color: rgba(109, 51, 160, 0.92);
+    background-color: rgba(109, 51, 160, 0.935);
     background-image: url("../img/desktop/logo.png"), url("../img/desktop/bg.png");
     background-position: top left, center;
     background-repeat: no-repeat; 
@@ -127,7 +127,7 @@ h3 {
 width: 28px;
 height: 13px;
   z-index: 9997;
-background-image: url(/img/bonzi/bubble_point.png)
+background-image: url(/img/bonzi/bubble_point.png);
 }
 
 .context_menu {
@@ -149,7 +149,7 @@ background-image: url(/img/bonzi/bubble_point.png)
   .bonzi_canvas {
     width: 200px;
     height: 160px;
-    filter: drop-shadow(5px 5px 2px rgba(0,0,0,0.6));
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.6));
     touch-action: none;
   }
   .bonzi_name {

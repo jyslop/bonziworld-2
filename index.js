@@ -38,7 +38,9 @@ const blacklist = [
   "<audio",
   " onclick='",
   " onmouseover='",
-  
+  " onload=",
+  " onerror=",
+  " src=",
   "();",
   ".emit",
   "function()",
@@ -63,7 +65,7 @@ http.listen(process.env.PORT || 3000, function() {
 });
 let config = {
 	rateLimit:800,
-	godword:"wewuzchatascoloredmonkeyznsheit",
+	godword:"admin",
 	rooms:{
 		idLength:50,
 		nameLength:30
@@ -486,7 +488,7 @@ io.on("connection", function(socket){
 			
 				let roomUsers = getUsers(data.room);
 				let publicUser = getUsers(data.room)[socket.user.roomIndex];
-				eventRoom("newuser",publicUser,socket.user);
+				eventRoom("newuser",publicUser,socket.user,false);
 
 				let matchingIds = publicrooms[data.room].owner == socket.user.id;
 				socket.emit("room",{
@@ -495,7 +497,7 @@ io.on("connection", function(socket){
 					id:socket.user.roomId,
 					room:data.room
 				});
-				socket.emit("userlist",{list:roomUsers});
+				setTimeout(() => {socket.emit("userlist",{list:roomUsers})},100);
 				
 				socket.user.loggedIn=true;
 				socket.on("banUser",(data) => {
@@ -580,15 +582,24 @@ io.on("connection", function(socket){
 				});
 
 				socket.on("disconnect", () => {
-					eventRoom('leave',{id:socket.user.id},socket.user,true);
-					publicrooms[socket.user.roomId].users.splice(socket.user.roomIndex,1);
-					if(publicrooms[socket.user.roomId].users.length < 1)delete publicrooms[socket.user.roomId];
-					if(typeof skiddieWatch[socket.user.ip] == "object"){
+    let room = publicrooms[socket.user.roomId];
+    if (!room) return;
+
+    eventRoom('leave', { id: socket.user.id }, socket.user, true);
+
+    room.users = room.users.filter(
+        user => user.id !== socket.user.id
+    );
+
+    if (room.users.length < 1) {
+        delete publicrooms[socket.user.roomId];
+    }
+if(typeof skiddieWatch[socket.user.ip] == "object"){
 						if(skiddieWatch[socket.user.ip].instances > 0 && socket.user.loggedIn){skiddieWatch[socket.user.ip].instances--; skiddieWatch[socket.user.ip].lastLogged=0;}
 						
 						if(skiddieWatch[socket.user.ip].instances < 1)delete skiddieWatch[socket.user.ip];
 					}
-				});
+});
 		} else {
 			socket.emit("err","COMPUTER (SENTIENT) SAYS: dont log in too fast or too many times it hurts my feelings");
 			
