@@ -7,7 +7,7 @@ var cors = require('cors');
 var fs = require('fs');
 var bans = require('./bans.js');
 
-let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8');
+let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8') + "\n" + fs.readFileSync('./badip/data2.txt','utf-8') + "\n" + fs.readFileSync('./badip/ipsum2.txt','utf-8');
 /*
 let proxyASNs = [9009, 20473, 14618]; 
 let { lookup } = require('geoip-lite'); */
