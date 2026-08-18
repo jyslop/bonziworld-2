@@ -344,11 +344,28 @@ setInterval(() => {
 		if(currentUser.lastLogged < 90000)currentUser.lastLogged+=100;
 	});
 },100);
-function blankify(txt,limiter=1024){
-	blacklist.forEach(blacklistContent => {
-		txt = txt.replaceAll(blacklistContent,"");
-	});
-	return txt.substring(0,limiter);
+function blankify(input, maxLength = 2500) {
+  if (typeof input !== 'string') return '';
+
+  return input
+    //normalize unicode (prevents lookalike/homoglyph tricks)
+    .normalize('NFKC')
+    //strip control characters & zero-width chars (invisible payloads + RTL override tricks)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u200B-\u200F\u2028\u2029\uFEFF]/g, '')
+    //rape whitespace
+    .trim()
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    //commands and events already limit string length but whatever
+    .slice(0, maxLength)
+    //no html keed
+    .replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[c]));
 }
 function getUsers(roomId){
 	let result = [];
