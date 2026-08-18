@@ -51,10 +51,9 @@ function markupify(text,removeMarkupze=false){
 function reversify(newArray){
 	let result = [];
 
-	for(let i=newArray.length-1;i>0;i--){ //for loops if they were evil and fucked up and twisted and sick in the head:
-		result.push(newArray[i]); //calm down woody we're you're friends
-	} // shut up buzz
-	// i'll kill you
+	for(let i=newArray.length-1;i>0;i--){
+		result.push(newArray[i]);
+	}
 	return result;
 }
 class Notify {
@@ -144,6 +143,10 @@ var logtxt = `
 `;
 
 var hatList = {
+  "dank":"./img/bonzi/hats/dank.webp",
+  "headphones":"./img/bonzi/hats/headphones.webp",
+  "illuminati":"./img/bonzi/hats/illuminati.webp",
+  "obama":"./img/bonzi/hats/obama.webp",
   "wizard": "./img/bonzi/hats/wizard.png",
   "windows": "./img/bonzi/hats/windows.png",
   "truck": "./img/bonzi/hats/truck.png",
@@ -185,6 +188,46 @@ var hatList = {
                     contentElem.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
                 }
             };
+
+async function solvePoW(challenge, difficulty) {
+	let prefix = '0'.repeat(difficulty);
+	let nonce = 0;
+	let hash = '';
+	while(true){
+		let attempt = challenge + ':' + nonce;
+		let msgBuffer = new TextEncoder().encode(attempt);
+		let hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+		let hashArray = Array.from(new Uint8Array(hashBuffer));
+		hash = hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+		if(hash.startsWith(prefix)) break;
+		nonce++;
+	}
+	return String(nonce);
+}
+
+function showPoWIndicator() {
+	let existing = document.getElementById('pow_indicator');
+	if(existing) return;
+	document.getElementById('login_load').insertAdjacentHTML('beforeend',`
+		<div id="pow_indicator" style="margin-top:10px;font-family:'WinXP',Tahoma,sans-serif;font-size:13px;color:#fff;text-align:center;background:rgba(0,0,0,0.35);border-radius:4px;padding:6px 10px;">
+			<span id="pow_dots_anim">&#9632;</span> Verifying your browser&hellip; please wait
+		</div>
+	`);
+	let dots = ['&#9632;','&#9633;','&#9632;&#9633;','&#9633;&#9632;'];
+	let di = 0;
+	window._powDotsInterval = setInterval(() => {
+		let el = document.getElementById('pow_dots_anim');
+		if(el){ el.innerHTML = dots[di % dots.length]; di++; }
+		else { clearInterval(window._powDotsInterval); }
+	}, 300);
+}
+
+function hidePoWIndicator() {
+	clearInterval(window._powDotsInterval);
+	let el = document.getElementById('pow_indicator');
+	if(el) el.remove();
+}
+
 let applets = {
 	"settings": { 
         buttonId: "my_bonzi", 
@@ -195,15 +238,12 @@ let applets = {
                 return;
             } 
 
-
-
             new Dialog({
                 title: "Settings",
                 width: '400',
                 height: '560',
                 html: `
                 <div style="display:flex; overflow: hidden !important;" bis_skin_checked="1">
-                    <!-- Sidebar Navigation -->
                     <div style="width: 99px; height:497px; background: linear-gradient(rgb(188 160 230), rgb(130 102 169)); display:flex; flex-direction:column; align-items:center; padding:10px" bis_skin_checked="1">
                         <div style="width:95px; height:70px; background:white; border-radius: 4px; font-size:12px; text-align:center;" bis_skin_checked="1">
                             <div style="width: 89px; height: 18px; background: indigo; border-radius: 4px 4px 0px 0px; padding: 3px; font-size: 12px; color: white; font-weight: bold; text-shadow: 1px 1px black;" bis_skin_checked="1">
@@ -221,12 +261,12 @@ let applets = {
                             <div id="row_color1" style="display:flex; flex-direction:row; margin-bottom: 4px;" bis_skin_checked="1"></div> 
                             <div id="row_color2" style="display:flex; flex-direction:row; margin-bottom: 8px;" bis_skin_checked="1"></div> 
                             <input type="text" placeholder="crosscolor (optional, catbox.moe only)" id="ccurl" style="width: 160px;"> 
-                            <button onclick="socket.emit('command',{type:'color',param:document.getElementById('ccurl').value});">submit CC</button> 
+                            <button onclick="socket.emit('command',{type:'color',param:document.getElementById('ccurl').value});  profileList[0].color=document.getElementById('ccurl').value; saveArray('profiles', profileList); ">submit CC</button> 
                             &nbsp; &nbsp; &nbsp; <button onclick="window.open('https://catbox.moe');">Catbox</button> 
                             <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.4); margin: 8px 0;"> 
                             Name:<br> 
                             <input type="text" placeholder="Username" id="usernameswap">
-                            <button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value}); profileList[0].name=document.getElementById('usernameswap').value;">Set Name</button> 
+                            <button onclick="socket.emit('command',{type:'name',param:document.getElementById('usernameswap').value}); profileList[0].name=document.getElementById('usernameswap').value; saveArray('profiles', profileList); ">Set Name</button> 
                             <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.4); margin: 8px 0;"> 
                             Hats:<br> 
                             <div id="hat_grid" style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; width:100%; height: 170px; overflow-y:scroll; overflow-x:hidden;" bis_skin_checked="1"></div> 
@@ -319,7 +359,7 @@ console.log('q');
             let currentRow = 1; 
 for (let i = 0; i < clrs.length; i++) {if (i >= clrs.length / 2) currentRow = 2;document.getElementById('row_color' + currentRow).insertAdjacentHTML('beforeend',`
   <button onclick="socket.emit('command',{type:'color',param:'${clrs[i]}'}); profileList[0].color='${clrs[i]}';"> 
- <div style="width:35px;height:35px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink', 'magenta').replaceAll('purple', 'indigo').replaceAll('brown', 'saddlebrown')});"></div>  </button> `);}// Original Populate Routines: Populate Hat gridslet 
+ <div style="width:35px;height:35px;background-image:linear-gradient(white,${clrs[i].replaceAll('pink', 'magenta').replaceAll('purple', 'indigo').replaceAll('brown', 'saddlebrown')});"></div>  </button> `);}let 
 hatGrid = document.getElementById('hat_grid');
 Object.keys(hatList).forEach(hatName => {hatGrid.insertAdjacentHTML('beforeend',`
   <button title="${hatName}" onclick="socket.emit('command',{type:'hat',param:'${hatName}'}); profileList[0].hats.push('${hatName}')" style="display:flex;flex-direction:column;align-items:center;width:40px;font-size:10px;padding:3px;">  <img src="${hatList[hatName]}" style="width:50px;height:40px;object-fit:contain;">  
@@ -377,7 +417,6 @@ socket.on('roomslist',d=>{
 				disconnectErr=false;
 				socket.disconnect();
 				roomWindow.element.remove();
-				//socket.on('disconnect',disconnectHandle);
 		 	};
 	    });
 		setTimeout(() => {
@@ -471,7 +510,7 @@ $(window).load(function(){
   if (savedBgColor) {
     applyBgColor(savedBgColor);
   }
-	
+  if(profileList[0].name != 'Anonymous')document.getElementById('login_name').value = profileList[0].name;
   updateIconToggleButton();
 
   document.addEventListener("touchstart", touchHandler, true);
@@ -483,14 +522,14 @@ $(window).load(function(){
   }
   $("#login_load").hide();
   $("#login_card").show();
-  $("#login_go1").click(() => {
+  $("#login_go").click(() => {
       setTimeout(() => {
         var audioe = new Audio("/sound/start.mp3");
         audioe.play();
         first = false;
+		login();
       },300);
-    $("#login_card").html('<input id="login_name" type="text" placeholder="Nickname"><input id="login_room" type="text" placeholder="Room ID (Optional)"><div id="login_go"></div><div id="login_error" style="display:none"></div>');
-    $("#login_go").click(login);
+    setTimeout(() => {if(profileList[0].name !== 'Anonymous')document.getElementById('login_name').value=profileList[0].name;},500);
     $("#login_name, #login_room").keypress(function(e) {
       if(e.which == 13) {
         login();
@@ -1294,14 +1333,6 @@ function resetUsers(userlist) {
 }
 let disconnectErr = true;
 function unfuck(){
-
-	//RANCID FUCKING HACK
-	//google chrome and javascript is sourced directly from mossad's rotting asshole
-	//the creation of bonzi elements FORCES duplicate versions of nametags and message bubbles
-//there are no duplicate bonzis and not once does html creation get done twice in the process of spawning a bonzi
-//no flaws with anything ive done its likely
-
-
 	let destruction = [];
 	for(let i=0;i<document.querySelectorAll('*').length;i++){
 		let c = document.querySelectorAll('*')[i];
@@ -1332,7 +1363,6 @@ let mainSrc = "";
 
 let musicList = [];
 					let loadedMusic = loadArray('objectsmusic');
-					// FIX: Safely initialize musicList with null check
 					musicList = (typeof loadedMusic == 'object' && loadedMusic !== null) ? loadedMusic : [];
 					if(musicList == null)musicList=[];
 					if(typeof musicList.length == 'undefined')musicList=[];
@@ -1358,7 +1388,7 @@ let musicList = [];
 						document.getElementById('musicplaylist').innerHTML='';
 						if(typeof musicList != 'object' || musicList == null)return;
 						musicList.forEach((musicObject,i) => {
-							document.getElementById('musicplaylist').insertAdjacentHTML('beforeend','<p class="optionmusic" id="'+musicObject.name.substring(0,3)+'" onclick="playSong(musicList['+i.toString()+'].src,this.id);">'+musicObject.name+'&nbsp;&nbsp;&nbsp; || <span onclick="musicList.splice('+i.toString()+',1); updateList();">🗑️</span></p>');
+							document.getElementById('musicplaylist').insertAdjacentHTML('beforeend','<p class="optionmusic" id="'+musicObject.name.substring(0,3)+'" onclick="playSong(musicList['+i.toString()+'].src,this.id);">'+musicObject.name+'&nbsp;&nbsp;&nbsp; || <span onclick="musicList.splice('+i.toString()+',1); updateList();">???</span></p>');
 						});
 						
 					};
@@ -1377,6 +1407,8 @@ function login(newRoom){
 	socket.connect();
 	if(typeof newRoom == 'undefined')newRoom=$("#login_room").val();
 	listenerNames.forEach(listenerName => {socket.off(listenerName);});
+	socket.off('pow_challenge');
+	socket.off('pow_solution');
 	Object.keys(applets).forEach(appletName => {
 		let currentApplet = applets[appletName];
 		document.getElementById(currentApplet.buttonId).onclick = () => {
@@ -1402,6 +1434,14 @@ function login(newRoom){
     room: typeof newRoom === 'string' ? newRoom.substring(0, 64) : ""
 });
 
+  socket.once('pow_challenge', async (data) => {
+	showPoWIndicator();
+	let nonce = await solvePoW(data.challenge, data.difficulty);
+	hidePoWIndicator();
+	socket.emit('pow_solution', {nonce: nonce});
+  });
+
+  setTimeout(() => {socket.emit('command',{type:'color',param:profileList[0].color});  },1000);
   setInterval(() => {typingStatus.t+=100; if(typingStatus.t>2000){typingStatus.t=2000;}},100);
   document.getElementById("chat_message").onfocus = () => {typingStatus.focused=true;};
   document.getElementById("chat_message").onblur = () => {typingStatus.focused=false;};
@@ -1516,8 +1556,8 @@ background: radial-gradient(circle, rgba(211, 181, 247, 1) 0%, rgba(174, 113, 25
 				<button class="mediacontrol" onclick="mainAudio.play();" style="
 					width: 40px;
 					height: 40px;
-				">▶</button>
-				<button class="mediacontrol" onclick="mainAudio.load();">◼️</button>
+				">?</button>
+				<button class="mediacontrol" onclick="mainAudio.load();">??</button>
 				<hr>
 				<input type="text" id="musicname" placeholder="Music name"><input type="text" id="musicurl" placeholder=".mp3 or .wav URL"><br>
 				<button id="musicadd">+ Music</button>

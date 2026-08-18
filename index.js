@@ -5,13 +5,10 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var cors = require('cors');
 var fs = require('fs');
+var crypto = require('crypto');
 var bans = require('./bans.js');
 
 let proxiesIPV4 = fs.readFileSync('./badip/ipsum.txt','utf-8') + "\n" + fs.readFileSync('./badip/data.txt','utf-8') + "\n" + fs.readFileSync('./badip/data2.txt','utf-8') + "\n" + fs.readFileSync('./badip/ipsum2.txt','utf-8');
-/*
-let proxyASNs = [9009, 20473, 14618]; 
-let { lookup } = require('geoip-lite'); */
-
 
 function isFucked(ip) {
 	let result = false;
@@ -65,7 +62,9 @@ http.listen(process.env.PORT || 3000, function() {
 });
 let config = {
 	rateLimit:800,
-	godword:"admin",
+	godword:"skodwarde",
+	powDifficulty: 4,
+	powChallengeExpiry: 60000,
 	rooms:{
 		idLength:50,
 		nameLength:30
@@ -75,8 +74,7 @@ let config = {
 	imageFormats:['.webp','.png','.jpeg','.jpg','.gif','.bmp','.ico'],
 	commands:{
 		"color":(thisSocket,eventData)=>{
-			if(typeof eventData == "string"){ //i already check the types but might as well give the shop owner a self-defense weapon too
-				
+			if(typeof eventData == "string"){ 
 				if(!config.mediaWhitelist.some(r => eventData.startsWith(r)) && !colorNames.includes(eventData))return;
 				if(colorNames.includes(eventData) && eventData !== "pope")eventData=colorList[eventData];
 				let roomUsers = getUsers(thisSocket.user.roomId);
@@ -205,18 +203,32 @@ let config = {
 				return thisSocket.user;
 			}
 		},
+		
 		"bless":(thisSocket,param)=>{
 			if(thisSocket.user.level > 2){
 				let currentRoom = publicrooms[thisSocket.user.roomId];
 				currentRoom.users.forEach(userObject => {
 					if(userObject.id == param){
+						userObject.level = 2;
 						userObject = updateUser(userObject,{color:'./img/bonzi/blessed.png',tag:'Blessed'},true);
 					}
 				});
 			}
 		},
+		"glow":(thisSocket,param)=>{
+			if(thisSocket.user.level > 1){
+				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/glow.webp",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
+				return thisSocket.user;
+			}
+		},
+		"noob":(thisSocket,param)=>{
+			if(thisSocket.user.level > 1){
+				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/noob.webp",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
+				return thisSocket.user;
+			}
+		},
 		"pope":(thisSocket,param)=>{
-			if(thisSocket.user.level > 2){
+			if(thisSocket.user.level > 1){
 				thisSocket.user = updateUser(thisSocket.user,{color:"./img/bonzi/pope.png",tag:"<img src='/img/desktop/icons/wrench_antenna.png' class='tagicon'>"},true);
 				return thisSocket.user;
 			}
@@ -277,7 +289,6 @@ let config = {
 		}
 	}
 };
-var godword = "wewuzchatascoloredmunkeez";
 var colorList = {
   "red":"/img/bonzi/red.png",
   "green":"/img/bonzi/green.png",
@@ -412,6 +423,14 @@ setInterval(() => {
 							module.exports = ${JSON.stringify(bans,null,2)};
 						`,'utf-8')
 },60000);
+
+function verifyPoW(challenge, nonce, difficulty) {
+	let attempt = challenge + ':' + nonce;
+	let hash = crypto.createHash('sha256').update(attempt).digest('hex');
+	let prefix = '0'.repeat(difficulty);
+	return hash.startsWith(prefix);
+}
+
 io.on("connection", function(socket){
 	var userid = Idgen(10);
 	var newcolor = colorList[colorNames[Math.floor(Math.random()*colorNames.length)]];
@@ -435,6 +454,11 @@ io.on("connection", function(socket){
 		tag:"",
 		socket:socket
 	};
+
+	socket._powChallenge = null;
+	socket._powExpiry = null;
+	socket._pendingLoginData = null;
+
 	if(Object.keys(bans).includes(socket.user.ip)){
 		let entry = bans[socket.user.ip];
 		let MINUTES = parseFloat(entry.duration);
@@ -464,7 +488,41 @@ io.on("connection", function(socket){
 			
 			if(data.room == "")data.room = "default";
 			if(data.name == "")data.name = "Anonymous";
-			
+
+			socket._pendingLoginData = data;
+
+			let challenge = crypto.randomBytes(16).toString('hex');
+			socket._powChallenge = challenge;
+			socket._powExpiry = Date.now() + config.powChallengeExpiry;
+
+			socket.emit('pow_challenge', {challenge: challenge, difficulty: config.powDifficulty});
+		}
+		}
+	});
+
+	socket.on("pow_solution", (data) => {
+		if(typeof data != "object")return;
+		if(typeof data.nonce != "string" && typeof data.nonce != "number")return;
+		if(!socket._powChallenge || !socket._pendingLoginData)return;
+		if(Date.now() > socket._powExpiry){
+			socket.emit("err","PoW challenge expired. Please try again.");
+			socket._powChallenge = null;
+			socket._pendingLoginData = null;
+			return;
+		}
+
+		let nonce = String(data.nonce);
+		if(!verifyPoW(socket._powChallenge, nonce, config.powDifficulty)){
+			socket.emit("err","Invalid proof of work. Please try again.");
+			socket._powChallenge = null;
+			socket._pendingLoginData = null;
+			return;
+		}
+
+		socket._powChallenge = null;
+		let loginData = socket._pendingLoginData;
+		socket._pendingLoginData = null;
+
 			let over9000 = false;
 			if(typeof skiddieWatch[socket.user.ip] == "object"){
 			    if(typeof skiddieWatch[socket.user.ip].lastLogged == "number"){
@@ -482,20 +540,20 @@ io.on("connection", function(socket){
 			
 				socket.user = updateUser(
 					socket.user,
-					{name:data.name,roomId:data.room},
+					{name:loginData.name,roomId:loginData.room},
 					false
 				);
 			
-				let roomUsers = getUsers(data.room);
-				let publicUser = getUsers(data.room)[socket.user.roomIndex];
+				let roomUsers = getUsers(loginData.room);
+				let publicUser = getUsers(loginData.room)[socket.user.roomIndex];
 				eventRoom("newuser",publicUser,socket.user,false);
 
-				let matchingIds = publicrooms[data.room].owner == socket.user.id;
+				let matchingIds = publicrooms[loginData.room].owner == socket.user.id;
 				socket.emit("room",{
-					isPublic:publicrooms[data.room].isPublic,
+					isPublic:publicrooms[loginData.room].isPublic,
 					isOwner:matchingIds,
 					id:socket.user.roomId,
-					room:data.room
+					room:loginData.room
 				});
 				setTimeout(() => {socket.emit("userlist",{list:roomUsers})},100);
 				
@@ -507,7 +565,6 @@ io.on("connection", function(socket){
 						
 						
 						let targetUser = findUser(socket.user.roomId,data.id);
-						//console.log(targetUser);
 						if(typeof targetUser == 'number')return;
 						
 						let result = {duration:0,reason:''};
@@ -520,11 +577,25 @@ io.on("connection", function(socket){
 						}else {result.duration=parseFloat(data.minutes)+(parseFloat(data.hours)*60);}
 						result.reason=data.reason;
 						result.duration=result.duration.toString();
-						
-						bans[targetUser.ip]=result;
-						fs.writeFileSync('./bans.js',`
-							module.exports = ${JSON.stringify(bans,null,2)};
-						`,'utf-8')
+				
+bans[targetUser.ip] = result;
+fs.writeFileSync('./bans.js', `
+    module.exports = ${JSON.stringify(bans, null, 2)};
+`, 'utf-8');
+
+let targetSocket = targetUser.socket;
+eventRoom('leave', { id: targetUser.id }, targetUser, true);
+let room = publicrooms[targetUser.roomId];
+if (room) {
+    room.users = room.users.filter(u => u.id !== targetUser.id);
+    if (room.users.length < 1) {
+        delete publicrooms[targetUser.roomId];
+    }
+}
+if (targetSocket) {
+    targetSocket.emit('ban', { duration: result.duration, reason: result.reason });
+    setTimeout(() => { targetSocket.disconnect(true); }, 3000);
+}
 					}
 				});
 				socket.on("msg", (data) => {
@@ -553,9 +624,7 @@ io.on("connection", function(socket){
 					}
 				});
 				socket.on("typing",(data) => {
-					//console.log(JSON.stringify(data));
 					if(typeof data != "string" && typeof data != "number")return;
-					//people might be able to crash this by running it in non-existent rooms or logged out idk lol
 					let status = false;
 					if(data === 0)status=false;
 					if(data === 1)status=true;
@@ -603,11 +672,6 @@ if(typeof skiddieWatch[socket.user.ip] == "object"){
 		} else {
 			socket.emit("err","COMPUTER (SENTIENT) SAYS: dont log in too fast or too many times it hurts my feelings");
 			
-		}
-		}
-		
-		
-		
 		}
 	});
 
